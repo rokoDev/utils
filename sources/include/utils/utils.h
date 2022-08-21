@@ -2,8 +2,10 @@
 #define utils_h
 
 #include <array>
+#include <cassert>
 #include <climits>
 #include <cstring>
+#include <limits>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
