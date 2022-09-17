@@ -362,6 +362,22 @@ constexpr std::size_t sum_size()
     return bits_size / CHAR_BIT + static_cast<bool>(bits_size % CHAR_BIT);
 }
 
+template <typename T>
+constexpr std::size_t nbits_occupied(T&& aValue) noexcept
+{
+    using ValueT = remove_cvref_t<T>;
+    static_assert(std::is_unsigned_v<ValueT> && !std::is_same_v<ValueT, bool>,
+                  "ValueT must be unsigned and not bool.");
+    ValueT vCopy = aValue;
+    std::size_t nBitsToSave{};
+    while (vCopy)
+    {
+        vCopy >>= 1;
+        ++nBitsToSave;
+    }
+    return nBitsToSave;
+}
+
 template <typename F, typename... Ts>
 void for_each_arg(F&& f, Ts&&... ts)
 {
