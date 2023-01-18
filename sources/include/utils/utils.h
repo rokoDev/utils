@@ -10,6 +10,9 @@
 #include <tuple>
 #include <type_traits>
 
+#include "type_list.h"
+#include "value_list.h"
+
 namespace utils
 {
 template <typename T>
@@ -502,86 +505,13 @@ struct shifted_sequence<std::integer_sequence<SeqT, I...>, N>
 template <typename Seq, auto N>
 using shifted_sequence_t = typename shifted_sequence<Seq, N>::type;
 
-template <auto FirstValue, auto... RestVals>
-struct value_at_index
-{
-    template <std::size_t I>
-    static constexpr auto get() noexcept
-    {
-        if constexpr (I == 0)
-        {
-            return FirstValue;
-        }
-        else
-        {
-            return value_at_index<RestVals...>::template get<I - 1>();
-        }
-    }
-};
-
-template <auto... Vals>
-struct values
-{
-    static inline constexpr std::size_t size = sizeof...(Vals);
-
-    template <std::size_t I>
-    static constexpr auto get() noexcept
-    {
-        return value_at_index<Vals...>::template get<I>();
-    }
-};
-
-template <typename... Ts>
-struct type_list
-{
-    static inline constexpr std::size_t size = sizeof...(Ts);
-
-    template <std::size_t I, typename TupleT = std::tuple<Ts...>>
-    using at = std::tuple_element_t<I, TupleT>;
-};
-
-template <typename List1, typename List2>
-struct concatenate2;
-
-template <typename... Types1, typename... Types2>
-struct concatenate2<type_list<Types1...>, type_list<Types2...>>
-{
-    using type = type_list<Types1..., Types2...>;
-};
-
-template <typename... Lists>
-struct concatenate_impl;
-
-template <typename... Types>
-struct concatenate_impl<type_list<Types...>>
-{
-    using type = type_list<Types...>;
-};
-
-template <typename List1, typename List2, typename... RestLists>
-struct concatenate_impl<List1, List2, RestLists...>
-{
-    using type =
-        typename concatenate_impl<typename concatenate2<List1, List2>::type,
-                                  RestLists...>::type;
-};
-
-template <typename List, typename... RestLists>
-struct concatenate
-{
-    using type = typename concatenate_impl<List, RestLists...>::type;
-};
-
-template <typename... Lists>
-using concatenate_t = typename concatenate<Lists...>::type;
-
 template <typename Values1, typename Values2>
 struct multiply_2;
 
 template <auto... Values1, auto... Values2>
-struct multiply_2<values<Values1...>, values<Values2...>>
+struct multiply_2<value_list<Values1...>, value_list<Values2...>>
 {
-    using type = type_list<values<Values1..., Values2>...>;
+    using type = type_list<value_list<Values1..., Values2>...>;
 };
 
 template <typename Values1, typename Values2>
@@ -608,10 +538,10 @@ template <typename Values1, typename Values2>
 struct cartesian_product_2;
 
 template <auto... Values1, auto... Values2>
-struct cartesian_product_2<values<Values1...>, values<Values2...>>
+struct cartesian_product_2<value_list<Values1...>, value_list<Values2...>>
 {
-    using type =
-        concatenate_t<multiply_2_t<values<Values1>, values<Values2...>>...>;
+    using type = concatenate_t<
+        multiply_2_t<value_list<Values1>, value_list<Values2...>>...>;
 };
 
 template <typename Values1, typename Values2>
@@ -640,7 +570,7 @@ struct values_in_range
         static_cast<SeqT>(First)>;
 
     template <auto... I>
-    static values<I...> values_in_range_impl(
+    static value_list<I...> values_in_range_impl(
         std::integer_sequence<SeqT, I...>) noexcept;
 
    public:
