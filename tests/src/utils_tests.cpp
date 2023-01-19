@@ -101,3 +101,24 @@ TEST(UtilsTest, NBitsOccopied7)
     constexpr std::size_t bitsToSave = utils::nbits_occupied(kValue);
     static_assert(bitsToSave == 25, "Invalid bitsToSave");
 }
+
+TEST(UtilsTest, IsPowerOf2)
+{
+    struct power
+    {
+        std::size_t value{};
+        bool is_power_of_2{};
+    };
+
+    constexpr auto testData = utils::make_array(
+        power{0, false}, power{1, true}, power{2, true}, power{3, false},
+        power{4, true}, power{5, false}, power{6, false}, power{7, false},
+        power{8, true}, power{9, false}, power{11, false}, power{12, false},
+        power{13, false}, power{14, false}, power{15, false}, power{16, true},
+        power{17, false}, power{143390, false}, power{65536, true});
+
+    for (const auto& [value, state_power_of_2]: testData)
+    {
+        ASSERT_EQ(utils::is_power_of_2(value), state_power_of_2);
+    }
+}

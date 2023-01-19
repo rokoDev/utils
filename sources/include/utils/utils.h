@@ -319,6 +319,11 @@ constexpr uint8_t bits_count(const uint64_t aValue)
     return (aValue == 0) ? 0 : 1 + bits_count(aValue >> 1);
 }
 
+inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
+{
+    return aValue && ((aValue & (aValue - 1)) == 0);
+}
+
 template <uint8_t BitsCount>
 struct uint_from_nbits
 {
