@@ -585,6 +585,18 @@ struct values_in_range
 template <auto First, auto Last>
 using values_in_range_t = typename values_in_range<First, Last>::type;
 
+template <typename... Ts>
+struct is_tuple : std::false_type
+{
+};
+
+template <typename... Ts>
+struct is_tuple<std::tuple<Ts...>> : std::true_type
+{
+};
+
+template <typename... Ts>
+inline constexpr bool is_tuple_v = is_tuple<Ts...>::value;
 }  // namespace utils
 
 #endif /* utils_h */
