@@ -255,7 +255,7 @@ struct type_list
         typename list_of_predicate_compliant<Predicate>::type;
 };
 
-template <typename T>
+template <typename... Ts>
 struct is_type_list : std::false_type
 {
 };
@@ -265,8 +265,8 @@ struct is_type_list<type_list<Ts...>> : std::true_type
 {
 };
 
-template <typename T>
-inline constexpr bool is_type_list_v = is_type_list<T>::value;
+template <typename... Ts>
+inline constexpr bool is_type_list_v = is_type_list<Ts...>::value;
 }  // namespace utils
 
 #endif /* utils_type_list_h */
