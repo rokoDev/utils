@@ -297,6 +297,62 @@ TEST(UtilsTypeList, Contains)
         static_assert(not type_list::contains_v<uint8_t>, "invalid value");
         static_assert(not type_list::contains_v<void>, "invalid value");
     }
+
+    {
+        using type_list1 = utils::type_list<>;
+        using type_list2 = utils::type_list<>;
+
+        static_assert(type_list1::contains_v<type_list2>);
+    }
+
+    {
+        using type_list1 =
+            utils::type_list<eFileError, int32_t, eReaderError, float,
+                             eFileError, eWriterError, double, eFileError>;
+
+        using type_list2 = utils::type_list<>;
+
+        static_assert(type_list1::contains_v<type_list2>);
+        static_assert(not type_list2::contains_v<type_list1>);
+    }
+
+    {
+        using type_list1 =
+            utils::type_list<eFileError, int32_t, eReaderError, float,
+                             eFileError, eWriterError, double, eFileError>;
+
+        using type_list2 = utils::type_list<int32_t, eWriterError>;
+
+        static_assert(type_list1::contains_v<type_list2>);
+    }
+
+    {
+        using type_list1 =
+            utils::type_list<eFileError, int32_t, eReaderError, float,
+                             eFileError, eWriterError, double, eFileError>;
+
+        using type_list2 = utils::type_list<int32_t, eWriterError, bool>;
+
+        static_assert(not type_list1::contains_v<type_list2>);
+    }
+
+    {
+        using type_list1 =
+            utils::type_list<eFileError, int32_t, eReaderError, float>;
+        using type_list2 =
+            utils::type_list<eFileError, int32_t, eReaderError, float>;
+
+        static_assert(type_list2::contains_v<type_list1>);
+    }
+
+    {
+        using type_list1 =
+            utils::type_list<eFileError, int32_t, eReaderError, float>;
+        using type_list2 = utils::type_list<float, eFileError, int32_t,
+                                            eReaderError, float, eReaderError>;
+
+        static_assert(type_list1::contains_v<type_list2>);
+    }
 }
 
 TEST(UtilsTypeList, ContainsPredicateCompliant)

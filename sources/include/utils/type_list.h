@@ -231,10 +231,18 @@ struct type_list
                                                          Ts...>::value;
 
     template <typename T>
-    using contains = std::bool_constant<static_cast<bool>(count_of<T>)>;
+    struct contains : std::bool_constant<static_cast<bool>(count_of<T>)>
+    {
+    };
+
+    template <typename... Us>
+    struct contains<type_list<Us...>>
+        : std::bool_constant<std::conjunction_v<contains<Us>...>>
+    {
+    };
 
     template <typename T>
-    static constexpr bool contains_v = count_of<T>;
+    static constexpr bool contains_v = contains<T>::value;
 
     template <template <typename> typename Predicate>
     static constexpr bool contains_predicate_compliant =
