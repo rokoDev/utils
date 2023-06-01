@@ -194,3 +194,25 @@ TEST(UtilsTest, SkipToAlignForInt64)
     ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(11)),
               5);
 }
+
+TEST(UtilsTest, IsRefWrapper)
+{
+    static_assert(not utils::is_ref_wrapper_v<int>);
+    static_assert(utils::is_ref_wrapper_v<std::reference_wrapper<char>>);
+
+    int val = 5;
+    static_assert(utils::is_ref_wrapper_v<decltype(std::cref(val))>);
+}
+
+TEST(UtilsTest, UnwrapReference)
+{
+    using t1 = int*;
+    static_assert(std::is_same_v<t1, utils::unwrap_reference_t<t1>>);
+
+    using t2 = std::reference_wrapper<t1>;
+    static_assert(std::is_same_v<t1&, utils::unwrap_reference_t<t2>>);
+
+    static_assert(
+        std::is_same_v<const int&, utils::unwrap_reference_t<
+                                       std::reference_wrapper<const int>>>);
+}

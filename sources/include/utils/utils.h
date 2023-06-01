@@ -5,6 +5,7 @@
 #include <cassert>
 #include <climits>
 #include <cstring>
+#include <functional>
 #include <limits>
 #include <string_view>
 #include <tuple>
@@ -607,6 +608,34 @@ struct is_tuple<std::tuple<Ts...>> : std::true_type
 
 template <typename... Ts>
 inline constexpr bool is_tuple_v = is_tuple<Ts...>::value;
+
+template <typename T>
+struct is_ref_wrapper : public std::false_type
+{
+};
+
+template <typename T>
+struct is_ref_wrapper<std::reference_wrapper<T>> : public std::true_type
+{
+};
+
+template <typename T>
+inline constexpr bool is_ref_wrapper_v = is_ref_wrapper<T>::value;
+
+template <typename T>
+struct unwrap_reference
+{
+    using type = T;
+};
+
+template <typename T>
+struct unwrap_reference<std::reference_wrapper<T>>
+{
+    using type = T&;
+};
+
+template <typename T>
+using unwrap_reference_t = typename unwrap_reference<T>::type;
 }  // namespace utils
 
 #endif /* utils_h */
