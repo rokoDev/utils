@@ -117,7 +117,7 @@ TEST(UtilsTest, IsPowerOf2)
         power{13, false}, power{14, false}, power{15, false}, power{16, true},
         power{17, false}, power{143390, false}, power{65536, true});
 
-    for (const auto& [value, state_power_of_2]: testData)
+    for (const auto &[value, state_power_of_2]: testData)
     {
         ASSERT_EQ(utils::is_power_of_2(value), state_power_of_2);
     }
@@ -125,73 +125,73 @@ TEST(UtilsTest, IsPowerOf2)
 
 TEST(UtilsTest, SkipToAlignForBool)
 {
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void*>(0)), 0);
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void*>(1)), 0);
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void*>(2)), 0);
+    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(1)), 0);
+    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(2)), 0);
 }
 
 TEST(UtilsTest, SkipToAlignForChar)
 {
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void*>(0)), 0);
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void*>(1)), 0);
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void*>(2)), 0);
+    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(1)), 0);
+    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(2)), 0);
 }
 
 TEST(UtilsTest, SkipToAlignForInt16)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void*>(0)),
+    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(0)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void*>(1)),
+    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(1)),
               1);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void*>(2)),
+    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(2)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void*>(3)),
+    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(3)),
               1);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void*>(4)),
+    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(4)),
               0);
 }
 
 TEST(UtilsTest, SkipToAlignForInt32)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(0)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(0)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(1)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(1)),
               3);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(2)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(2)),
               2);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(3)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(3)),
               1);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(4)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(4)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void*>(5)),
+    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(5)),
               3);
 }
 
 TEST(UtilsTest, SkipToAlignForInt64)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(0)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(0)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(1)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(1)),
               7);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(2)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(2)),
               6);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(3)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(3)),
               5);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(4)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(4)),
               4);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(5)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(5)),
               3);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(6)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(6)),
               2);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(7)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(7)),
               1);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(8)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(8)),
               0);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(9)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(9)),
               7);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(10)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(10)),
               6);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void*>(11)),
+    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(11)),
               5);
 }
 
@@ -206,13 +206,28 @@ TEST(UtilsTest, IsRefWrapper)
 
 TEST(UtilsTest, UnwrapReference)
 {
-    using t1 = int*;
+    using t1 = int *;
     static_assert(std::is_same_v<t1, utils::unwrap_reference_t<t1>>);
 
     using t2 = std::reference_wrapper<t1>;
-    static_assert(std::is_same_v<t1&, utils::unwrap_reference_t<t2>>);
+    static_assert(std::is_same_v<t1 &, utils::unwrap_reference_t<t2>>);
 
     static_assert(
-        std::is_same_v<const int&, utils::unwrap_reference_t<
-                                       std::reference_wrapper<const int>>>);
+        std::is_same_v<const int &, utils::unwrap_reference_t<
+                                        std::reference_wrapper<const int>>>);
+}
+
+TEST(UtilsTest, IsAligned)
+{
+    std::int16_t i16Value{};
+    ASSERT_TRUE(utils::is_aligned<std::int16_t>(&i16Value));
+
+    void *i16Plus1 = reinterpret_cast<char *>(&i16Value) + 1;
+    ASSERT_FALSE(utils::is_aligned<std::int16_t>(i16Plus1));
+
+    void *i16Plus2 = reinterpret_cast<char *>(&i16Value) + 2;
+    ASSERT_TRUE(utils::is_aligned<std::int16_t>(i16Plus2));
+
+    double dValue{};
+    ASSERT_TRUE(utils::is_aligned<double>(&dValue));
 }

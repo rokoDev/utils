@@ -266,13 +266,21 @@ inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
 }
 
 template <typename T>
-static constexpr uintptr_t skip_to_align(void const* aPtr) noexcept
+static uintptr_t skip_to_align(void const* aPtr) noexcept
 {
     constexpr auto kAlignment = alignof(T);
     static_assert(utils::is_power_of_2(kAlignment));
     const uintptr_t ptrAsUInt = reinterpret_cast<uintptr_t>(aPtr);
     const uintptr_t alignedPtr = (ptrAsUInt + (kAlignment - 1)) & -kAlignment;
     return alignedPtr - ptrAsUInt;
+}
+
+template <typename E>
+inline bool is_aligned(void const* aPtr) noexcept
+{
+    constexpr auto error_alignment = alignof(E);
+    static_assert(utils::is_power_of_2(error_alignment));
+    return ((reinterpret_cast<uintptr_t>(aPtr) & (error_alignment - 1)) == 0);
 }
 
 template <uint8_t BitsCount>
