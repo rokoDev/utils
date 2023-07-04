@@ -255,7 +255,7 @@ constexpr bool is_equal(const std::array<T, N>& lhs,
 
 inline constexpr auto kNumBitsTable = details::make_num_bits_table();
 
-constexpr uint8_t bits_count(const uint64_t aValue)
+constexpr uint8_t bits_count(const uint64_t aValue) noexcept
 {
     return (aValue == 0) ? 0 : 1 + bits_count(aValue >> 1);
 }
@@ -275,12 +275,17 @@ static uintptr_t skip_to_align(void const* aPtr) noexcept
     return alignedPtr - ptrAsUInt;
 }
 
-template <typename E>
+inline bool is_aligned(void const* aPtr, std::size_t aAlignment) noexcept
+{
+    assert(utils::is_power_of_2(aAlignment));
+    return ((reinterpret_cast<uintptr_t>(aPtr) & (aAlignment - 1)) == 0);
+}
+
+template <typename T>
 inline bool is_aligned(void const* aPtr) noexcept
 {
-    constexpr auto error_alignment = alignof(E);
-    static_assert(utils::is_power_of_2(error_alignment));
-    return ((reinterpret_cast<uintptr_t>(aPtr) & (error_alignment - 1)) == 0);
+    constexpr auto type_alignment = alignof(T);
+    return is_aligned(aPtr, type_alignment);
 }
 
 template <uint8_t BitsCount>
