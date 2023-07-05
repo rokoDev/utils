@@ -231,3 +231,48 @@ TEST(UtilsTest, IsAligned)
     double dValue{};
     ASSERT_TRUE(utils::is_aligned<double>(&dValue));
 }
+
+TEST(UtilsTest, MaxAlignmentInsideBlock)
+{
+    static_assert(utils::max_alignment_inside_block(1, 1) == 1);
+    static_assert(utils::max_alignment_inside_block(1, 2) == 2);
+    static_assert(utils::max_alignment_inside_block(1, 3) == 2);
+    static_assert(utils::max_alignment_inside_block(1, 4) == 4);
+    static_assert(utils::max_alignment_inside_block(1, 5) == 4);
+    static_assert(utils::max_alignment_inside_block(1, 6) == 4);
+    static_assert(utils::max_alignment_inside_block(1, 7) == 4);
+    static_assert(utils::max_alignment_inside_block(1, 8) == 8);
+
+    static_assert(utils::max_alignment_inside_block(2, 1) == 2);
+    static_assert(utils::max_alignment_inside_block(2, 2) == 2);
+    static_assert(utils::max_alignment_inside_block(2, 3) == 4);
+    static_assert(utils::max_alignment_inside_block(2, 4) == 4);
+    static_assert(utils::max_alignment_inside_block(2, 5) == 4);
+    static_assert(utils::max_alignment_inside_block(2, 6) == 4);
+    static_assert(utils::max_alignment_inside_block(2, 7) == 8);
+    static_assert(utils::max_alignment_inside_block(2, 8) == 8);
+
+    static_assert(utils::max_alignment_inside_block(4, 1) == 4);
+    static_assert(utils::max_alignment_inside_block(4, 2) == 4);
+    static_assert(utils::max_alignment_inside_block(4, 3) == 4);
+    static_assert(utils::max_alignment_inside_block(4, 4) == 4);
+    static_assert(utils::max_alignment_inside_block(4, 5) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 6) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 7) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 8) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 9) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 10) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 11) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 12) == 8);
+    static_assert(utils::max_alignment_inside_block(4, 13) == 16);
+
+    static_assert(utils::max_alignment_inside_block(8, 1) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 2) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 3) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 4) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 5) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 6) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 7) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 8) == 8);
+    static_assert(utils::max_alignment_inside_block(8, 9) == 16);
+}

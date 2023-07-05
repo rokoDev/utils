@@ -265,15 +265,40 @@ inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
     return aValue && ((aValue & (aValue - 1)) == 0);
 }
 
+uintptr_t skip_to_align(void const* aPtr, const std::size_t aAlignment) noexcept
+{
+    assert(utils::is_power_of_2(aAlignment));
+    const uintptr_t ptrAsUInt = reinterpret_cast<uintptr_t>(aPtr);
+    const uintptr_t alignedPtr = (ptrAsUInt + (aAlignment - 1)) & -aAlignment;
+    return alignedPtr - ptrAsUInt;
+}
+
 template <typename T>
 static uintptr_t skip_to_align(void const* aPtr) noexcept
 {
     constexpr auto kAlignment = alignof(T);
     static_assert(utils::is_power_of_2(kAlignment));
-    const uintptr_t ptrAsUInt = reinterpret_cast<uintptr_t>(aPtr);
-    const uintptr_t alignedPtr = (ptrAsUInt + (kAlignment - 1)) & -kAlignment;
-    return alignedPtr - ptrAsUInt;
+    return skip_to_align(aPtr, kAlignment);
 }
+
+constexpr std::size_t max_alignment_inside_block(
+    std::size_t aBlockAlignment, std::size_t aBlockSize) noexcept
+{
+    assert(is_power_of_2(aBlockAlignment));
+    assert(aBlockSize > 0);
+
+    const std::size_t value = aBlockAlignment + aBlockSize - 1;
+
+    // 1. msb = index of most significant bit set in binary representation of
+    // value: BlockAlignment + BlockSize - 1
+    const std::size_t msb = bits_count(value) - 1;
+
+    // 2. return 2^msb
+    const std::size_t max_alignment = 1 << msb;
+
+    return max_alignment;
+    ;
+};
 
 inline bool is_aligned(void const* aPtr, std::size_t aAlignment) noexcept
 {
