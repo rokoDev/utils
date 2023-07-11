@@ -260,6 +260,17 @@ constexpr uint8_t bits_count(const uint64_t aValue) noexcept
     return (aValue == 0) ? 0 : 1 + bits_count(aValue >> 1);
 }
 
+[[maybe_unused]] static bool memvcmp(const void* memptr, unsigned char val,
+                                     const std::size_t size)
+{
+    if ((0 == size) || (nullptr == memptr))
+    {
+        return false;
+    }
+    const unsigned char* mm = static_cast<const unsigned char*>(memptr);
+    return (*mm == val) && (memcmp(mm, mm + 1, size - 1) == 0);
+}
+
 inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
 {
     return aValue && ((aValue & (aValue - 1)) == 0);
