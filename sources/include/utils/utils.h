@@ -271,6 +271,14 @@ constexpr uint8_t bits_count(const uint64_t aValue) noexcept
     return (*mm == val) && (memcmp(mm, mm + 1, size - 1) == 0);
 }
 
+template <typename T>
+constexpr std::enable_if_t<std::is_unsigned_v<T>, T>
+greates_divisor_that_is_power_of_2(T aValue) noexcept
+{
+    return aValue ? (aValue & (~(aValue - 1)))
+                  : static_cast<T>(1) << (sizeof(T) * CHAR_BIT - 1);
+}
+
 inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
 {
     return aValue && ((aValue & (aValue - 1)) == 0);
