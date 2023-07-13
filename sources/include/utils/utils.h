@@ -273,7 +273,7 @@ constexpr uint8_t bits_count(const uint64_t aValue) noexcept
 
 template <typename T>
 constexpr std::enable_if_t<std::is_unsigned_v<T>, T>
-greates_divisor_that_is_power_of_2(T aValue) noexcept
+greatest_divisor_that_is_power_of_2(T aValue) noexcept
 {
     return aValue ? (aValue & (~(aValue - 1)))
                   : static_cast<T>(1) << (sizeof(T) * CHAR_BIT - 1);

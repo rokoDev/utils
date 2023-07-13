@@ -279,20 +279,20 @@ TEST(UtilsTest, MaxAlignmentInsideBlock)
 
 TEST(UtilsTest, GreatesDivisorThatIsPowerOf2)
 {
-    using utils::greates_divisor_that_is_power_of_2;
+    using utils::greatest_divisor_that_is_power_of_2;
     const uint8_t value = 0;
 
-    static_assert(greates_divisor_that_is_power_of_2(value) == 128);
-    static_assert(greates_divisor_that_is_power_of_2(1u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(2u) == 2);
-    static_assert(greates_divisor_that_is_power_of_2(3u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(4u) == 4);
-    static_assert(greates_divisor_that_is_power_of_2(5u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(6u) == 2);
-    static_assert(greates_divisor_that_is_power_of_2(7u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(8u) == 8);
-    static_assert(greates_divisor_that_is_power_of_2(9u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(10u) == 2);
-    static_assert(greates_divisor_that_is_power_of_2(11u) == 1);
-    static_assert(greates_divisor_that_is_power_of_2(12u) == 4);
+    static_assert(greatest_divisor_that_is_power_of_2(value) == 128);
+    static_assert(greatest_divisor_that_is_power_of_2(1u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(2u) == 2);
+    static_assert(greatest_divisor_that_is_power_of_2(3u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(4u) == 4);
+    static_assert(greatest_divisor_that_is_power_of_2(5u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(6u) == 2);
+    static_assert(greatest_divisor_that_is_power_of_2(7u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(8u) == 8);
+    static_assert(greatest_divisor_that_is_power_of_2(9u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(10u) == 2);
+    static_assert(greatest_divisor_that_is_power_of_2(11u) == 1);
+    static_assert(greatest_divisor_that_is_power_of_2(12u) == 4);
 }
