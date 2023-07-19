@@ -4,6 +4,9 @@
 #include <array>
 #include <cassert>
 #include <climits>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <limits>
@@ -15,6 +18,44 @@
 #include "function_traits.h"
 #include "type_list.h"
 #include "value_list.h"
+
+#ifdef __clang__
+#define UTILS_FUNC __PRETTY_FUNCTION__
+#elif defined(_MSC_VER)
+#define UTILS_FUNC __FUNCSIG__
+#elif defined(__GNUC__)
+#define UTILS_FUNC __PRETTY_FUNCTION__
+#else
+#error "Compiler unrecognized"
+#endif
+
+#ifndef UTILS_STRINGIFY
+#define UTILS_STRINGIFY(x) #x
+#else
+#error "UTILS_STRINGIFY already defined somewhere"
+#endif
+
+#ifndef UTILS_STR
+#define UTILS_STR(x) UTILS_STRINGIFY(x)
+#else
+#error "UTILS_STR already defined somewhere"
+#endif
+
+#ifndef UTILS_FILE_LINE
+#define UTILS_FILE_LINE "file: " __FILE__ "\nline: " UTILS_STR(__LINE__)
+#else
+#error "UTILS_FILE_LINE already defined somewhere"
+#endif
+
+#ifndef UTILS_ABORT_IF
+#define UTILS_ABORT_IF_HELPER(condition, format_str, ...)               \
+    utils::abort_if(condition,                                          \
+                    "[ERROR] " UTILS_FILE_LINE "\nfunc: %s" format_str, \
+                    UTILS_FUNC, __VA_ARGS__)
+#define UTILS_ABORT_IF(...) UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", "")
+#else
+#error "UTILS_ABORT_IF already defined somewhere"
+#endif
 
 namespace utils
 {
@@ -330,6 +371,23 @@ inline bool is_aligned(void const* aPtr) noexcept
 {
     constexpr auto type_alignment = alignof(T);
     return is_aligned(aPtr, type_alignment);
+}
+
+[[maybe_unused]] static void abort_if(const bool aCondition,
+                                      char const* aFormat = nullptr,
+                                      ...) noexcept
+{
+    if (aCondition)
+    {
+        if (aFormat)
+        {
+            std::va_list arglist;
+            va_start(arglist, aFormat);
+            vfprintf(stderr, aFormat, arglist);
+            va_end(arglist);
+        }
+        std::abort();
+    }
 }
 
 template <uint8_t BitsCount>

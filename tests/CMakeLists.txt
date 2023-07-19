@@ -87,7 +87,7 @@ set(test_src
 package_add_test(
   TEST_TARGET_NAME utils_common_tests
   TEST_SOURCES ${test_src}
-  EXTRA_TARGETS utils tests_main
+  EXTRA_TARGETS utils tests_main gmock
   )
 
 set(test_src

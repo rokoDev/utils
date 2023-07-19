@@ -1,6 +1,15 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include "utils/utils.h"
+
+namespace
+{
+using ::testing::StrEq;
+
+#define EXIT_MSG(x) \
+    StrEq(std::string("[ERROR] " UTILS_FILE_LINE "\nfunc: ") + UTILS_FUNC + x)
+}  // namespace
 
 TEST(UtilsTest, MakeEmptyArray)
 {
@@ -295,4 +304,62 @@ TEST(UtilsTest, GreatesDivisorThatIsPowerOf2)
     static_assert(greatest_divisor_that_is_power_of_2(10u) == 2);
     static_assert(greatest_divisor_that_is_power_of_2(11u) == 1);
     static_assert(greatest_divisor_that_is_power_of_2(12u) == 4);
+}
+
+TEST(UtilsDeathTest, AbortIfWithEmptyMessage)
+{
+    //    FOO(true);
+    //    FOO(true, "my message");
+    //    FOO(true, "my message: %d", 5);
+    //    FOO(true, "my message: %d%s", 5, "[ some_str ]");
+    ASSERT_DEATH({ utils::abort_if(true); }, StrEq(""));
+}
+
+TEST(UtilsDeathTest, AbortIfWithMessage)
+{
+    constexpr auto kMessage = "abort message";
+    ASSERT_DEATH({ utils::abort_if(true, kMessage); }, StrEq(kMessage));
+}
+
+TEST(UtilsDeathTest, AbortIfWithCompoundMessage)
+{
+    ASSERT_DEATH({ utils::abort_if(true, "abort with code: %d", 5); },
+                 StrEq("abort with code: 5"));
+}
+
+TEST(UtilsDeathTest, AbortIfWithFalseConditionAndEmptyMessage)
+{
+    utils::abort_if(false);
+    ASSERT_TRUE(true);
+}
+
+TEST(UtilsDeathTest, AbortIfWithFalseConditionAndMessage)
+{
+    constexpr auto kMessage = "abort message";
+    utils::abort_if(false, kMessage);
+    ASSERT_TRUE(true);
+}
+
+TEST(UtilsDeathTest, AbortIfWithFalseConditionAndCompoundMessage)
+{
+    utils::abort_if(false, "abort with code: %d", 5);
+    ASSERT_TRUE(true);
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessage)
+{
+    ASSERT_DEATH({ UTILS_ABORT_IF(true); }, EXIT_MSG(""));
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithMessage)
+{
+    constexpr auto kMsg = "abort message";
+    ASSERT_DEATH({ UTILS_ABORT_IF(true, "abort message"); }, EXIT_MSG(kMsg));
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithCompoundMessage)
+{
+    const bool c = true;
+    constexpr auto m = "abort message 5";
+    ASSERT_DEATH({ UTILS_ABORT_IF(c, "abort message %d", 5); }, EXIT_MSG(m));
 }
