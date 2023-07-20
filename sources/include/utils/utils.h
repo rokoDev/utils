@@ -48,9 +48,9 @@
 #endif
 
 #ifndef UTILS_ABORT_IF
-#define UTILS_ABORT_IF_HELPER(condition, format_str, ...)               \
-    utils::abort_if(condition,                                          \
-                    "[ERROR] " UTILS_FILE_LINE "\nfunc: %s" format_str, \
+#define UTILS_ABORT_IF_HELPER(condition, format_str, ...)                \
+    utils::abort_if(condition,                                           \
+                    "[ERROR]\n" UTILS_FILE_LINE "\nfunc: %s" format_str, \
                     UTILS_FUNC, __VA_ARGS__)
 #define UTILS_ABORT_IF(...) UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", "")
 #else

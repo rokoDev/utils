@@ -8,7 +8,7 @@ namespace
 using ::testing::StrEq;
 
 #define EXIT_MSG(x) \
-    StrEq(std::string("[ERROR] " UTILS_FILE_LINE "\nfunc: ") + UTILS_FUNC + x)
+    StrEq(std::string("[ERROR]\n" UTILS_FILE_LINE "\nfunc: ") + UTILS_FUNC + x)
 }  // namespace
 
 TEST(UtilsTest, MakeEmptyArray)
@@ -308,10 +308,6 @@ TEST(UtilsTest, GreatesDivisorThatIsPowerOf2)
 
 TEST(UtilsDeathTest, AbortIfWithEmptyMessage)
 {
-    //    FOO(true);
-    //    FOO(true, "my message");
-    //    FOO(true, "my message: %d", 5);
-    //    FOO(true, "my message: %d%s", 5, "[ some_str ]");
     ASSERT_DEATH({ utils::abort_if(true); }, StrEq(""));
 }
 
