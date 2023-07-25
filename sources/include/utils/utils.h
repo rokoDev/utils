@@ -16,6 +16,7 @@
 
 #include "detector.h"
 #include "function_traits.h"
+#include "memory.h"
 #include "type_list.h"
 #include "value_list.h"
 
