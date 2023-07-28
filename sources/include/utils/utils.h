@@ -14,6 +14,8 @@
 #include <tuple>
 #include <type_traits>
 
+#include "common.h"
+#include "ctz.h"
 #include "detector.h"
 #include "function_traits.h"
 #include "memory.h"

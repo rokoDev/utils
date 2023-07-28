@@ -26,28 +26,28 @@ struct value_list
     };
 
     template <typename U, typename V, U u, V v>
-    struct is_same_impl : std::false_type
+    struct is_same_impl_impl : std::false_type
     {
     };
 
     template <typename T, T v1, T v2>
-    struct is_same_impl<T, T, v1, v2> : std::bool_constant<v1 == v2>
+    struct is_same_impl_impl<T, T, v1, v2> : std::bool_constant<v1 == v2>
     {
     };
 
     template <auto V1, auto V2>
-    struct is_same : is_same_impl<decltype(V1), decltype(V2), V1, V2>
+    struct is_same_impl : is_same_impl_impl<decltype(V1), decltype(V2), V1, V2>
     {
     };
 
     template <auto V1, auto V2>
-    static constexpr std::size_t is_same_v = is_same<V1, V2>::value;
+    static constexpr std::size_t is_same_impl_v = is_same_impl<V1, V2>::value;
 
     template <auto Value, auto... Vs>
     struct count_of_impl
         : std::integral_constant<std::size_t, (0 + ... +
                                                static_cast<std::size_t>(
-                                                   is_same_v<Value, Vs>))>
+                                                   is_same_impl_v<Value, Vs>))>
     {
     };
 
@@ -58,7 +58,7 @@ struct value_list
 
     template <auto Value, auto... Vs>
     struct is_all_same_impl<Value, Vs...>
-        : std::conjunction<is_same<Value, Vs>...>
+        : std::conjunction<is_same_impl<Value, Vs>...>
     {
     };
 
@@ -69,7 +69,7 @@ struct value_list
     };
 
     template <auto Value, auto... Vs>
-    struct contains_impl : std::disjunction<is_same<Value, Vs>...>
+    struct contains_impl : std::disjunction<is_same_impl<Value, Vs>...>
     {
     };
 
@@ -80,7 +80,7 @@ struct value_list
 
     template <std::size_t I, auto U, auto V1, auto... V>
     struct index_of_impl<I, U, V1, V...>
-        : std::conditional_t<is_same_v<U, V1>,
+        : std::conditional_t<is_same_impl_v<U, V1>,
                              std::integral_constant<std::size_t, I>,
                              index_of_impl<I + 1, U, V...>>
     {
@@ -146,8 +146,10 @@ struct value_list
     static constexpr std::size_t index_of =
         impl::template index_of_impl<0, Value, Values...>::value;
 
-    static constexpr bool is_same =
-        impl::template is_all_same_impl<Values...>::value;
+    struct is_same : impl::template is_all_same_impl<Values...>
+    {
+    };
+    static constexpr bool is_same_v = is_same::value;
 
     template <auto Value>
     static constexpr std::size_t count_of =

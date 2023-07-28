@@ -3,6 +3,9 @@
 
 namespace utils
 {
+template <typename... Ts>
+struct type_list;
+
 namespace details
 {
 template <typename... Ts>
@@ -100,22 +103,27 @@ struct type_list
     {
     };
 
-    template <std::size_t Index, template <typename> typename Predicate,
-              typename... U>
+    template <std::size_t Index, template <typename...> typename Predicate,
+              typename TypeList, typename... RestPredArgs>
     struct index_of_impl;
 
-    template <std::size_t Index, template <typename T> typename Predicate>
-    struct index_of_impl<Index, Predicate>
+    template <std::size_t Index, template <typename... T> typename Predicate,
+              typename... RestPredArgs>
+    struct index_of_impl<Index, Predicate, ::utils::type_list<>,
+                         RestPredArgs...>
         : std::integral_constant<std::size_t, Index>
     {
     };
 
-    template <std::size_t Index, template <typename T> typename Predicate,
-              typename U, typename... V>
-    struct index_of_impl<Index, Predicate, U, V...>
-        : std::conditional_t<Predicate<U>::value,
-                             std::integral_constant<std::size_t, Index>,
-                             index_of_impl<Index + 1, Predicate, V...>>
+    template <std::size_t Index, template <typename... T> typename Predicate,
+              typename U, typename... V, typename... RestPredArgs>
+    struct index_of_impl<Index, Predicate, ::utils::type_list<U, V...>,
+                         RestPredArgs...>
+        : std::conditional_t<
+              Predicate<U, RestPredArgs...>::value,
+              std::integral_constant<std::size_t, Index>,
+              index_of_impl<Index + 1, Predicate, ::utils::type_list<V...>,
+                            RestPredArgs...>>
     {
     };
 
@@ -145,25 +153,25 @@ struct type_list
 
     template <template <typename...> typename R,
               template <typename...> typename Concat,
-              template <typename> typename Predicate, std::size_t TypeCount>
+              template <typename...> typename Predicate, std::size_t TypeCount,
+              typename... RestPredArgs>
     struct list_of_predicate_compliant_impl
     {
-        using type = typename Concat<
-            std::conditional_t<Predicate<Ts>::value, R<Ts>, R<>>...>::type;
+        using type = typename Concat<std::conditional_t<
+            Predicate<Ts, RestPredArgs...>::value, R<Ts>, R<>>...>::type;
     };
 
     template <template <typename...> typename R,
               template <typename...> typename Concat,
-              template <typename> typename Predicate>
-    struct list_of_predicate_compliant_impl<R, Concat, Predicate, 0>
+              template <typename...> typename Predicate,
+              typename... RestPredArgs>
+    struct list_of_predicate_compliant_impl<R, Concat, Predicate, 0,
+                                            RestPredArgs...>
     {
         using type = R<>;
     };
 };
 }  // namespace details
-
-template <typename... Ts>
-struct type_list;
 
 template <auto... Values>
 struct value_list;
@@ -210,9 +218,11 @@ struct type_list
     template <std::size_t I, template <typename> typename... Predicate>
     using at = typename impl::template at<I, Predicate...>::type;
 
-    template <template <typename> typename Predicate>
+    template <template <typename...> typename Predicate,
+              typename... RestPredArgs>
     static constexpr std::size_t index_of =
-        impl::template index_of_impl<0, Predicate, Ts...>::value;
+        impl::template index_of_impl<0, Predicate, type_list<Ts...>,
+                                     RestPredArgs...>::value;
 
     template <typename T>
     static constexpr std::size_t first_index_of_type =
@@ -251,17 +261,236 @@ struct type_list
     static constexpr bool contains_copies = std::disjunction_v<
         typename impl::template more_than_once<Ts, Ts...>...>;
 
-    template <template <typename T> typename Predicate>
+    template <template <typename... T> typename Predicate,
+              typename... RestPredArgs>
     struct list_of_predicate_compliant
     {
         using type = typename impl::template list_of_predicate_compliant_impl<
-            type_list, concatenate, Predicate, sizeof...(Ts)>::type;
+            type_list, concatenate, Predicate, sizeof...(Ts),
+            RestPredArgs...>::type;
     };
 
-    template <template <typename T> typename Predicate>
+    template <template <typename... T> typename Predicate,
+              typename... RestPredArgs>
     using list_of_predicate_compliant_t =
-        typename list_of_predicate_compliant<Predicate>::type;
+        typename list_of_predicate_compliant<Predicate, RestPredArgs...>::type;
 };
+
+namespace details
+{
+template <typename T, typename... Rest, std::size_t... I>
+constexpr std::size_t min_sizeof_index_impl(std::index_sequence<I...>) noexcept
+{
+    std::size_t index = 0;
+    std::size_t min_sizeof = sizeof(T);
+
+    (...,
+     [&index, &min_sizeof]()
+     {
+         if (min_sizeof > sizeof(Rest))
+         {
+             index = I + 1;
+             min_sizeof = sizeof(Rest);
+         }
+     }());
+
+    return index;
+}
+
+template <typename T, typename... Rest, std::size_t... I>
+constexpr std::size_t max_sizeof_index_impl(std::index_sequence<I...>) noexcept
+{
+    std::size_t index = 0;
+    std::size_t max_sizeof = sizeof(T);
+
+    (...,
+     [&index, &max_sizeof]()
+     {
+         if (max_sizeof < sizeof(Rest))
+         {
+             index = I + 1;
+             max_sizeof = sizeof(Rest);
+         }
+     }());
+
+    return index;
+}
+
+template <typename TypeList, std::size_t First, std::size_t... I>
+struct sublist_impl;
+
+template <typename... Ts, std::size_t First, std::size_t... I>
+struct sublist_impl<utils::type_list<Ts...>, First, I...>
+{
+    using type = utils::type_list<
+        typename utils::type_list<Ts...>::template at<First + I>...>;
+};
+
+template <typename TypeList, std::size_t First, std::size_t... I>
+constexpr sublist_impl<TypeList, First, I...> sublist_helper(
+    std::index_sequence<I...>) noexcept;
+}  // namespace details
+
+template <typename TypeList>
+struct min_sizeof_index;
+
+template <typename T, typename... Rest>
+struct min_sizeof_index<type_list<T, Rest...>>
+    : std::integral_constant<std::size_t,
+                             details::min_sizeof_index_impl<T, Rest...>(
+                                 std::make_index_sequence<sizeof...(Rest)>{})>
+{
+};
+
+template <typename TypeList>
+inline constexpr std::size_t min_sizeof_index_v =
+    min_sizeof_index<TypeList>::value;
+
+template <typename TypeList>
+struct max_sizeof_index;
+
+template <typename T, typename... Rest>
+struct max_sizeof_index<type_list<T, Rest...>>
+    : std::integral_constant<std::size_t,
+                             details::max_sizeof_index_impl<T, Rest...>(
+                                 std::make_index_sequence<sizeof...(Rest)>{})>
+{
+};
+
+template <typename TypeList>
+inline constexpr std::size_t max_sizeof_index_v =
+    max_sizeof_index<TypeList>::value;
+
+template <typename TypeList, std::size_t First, std::size_t Count>
+struct sublist;
+
+template <>
+struct sublist<type_list<>, 0, 0>
+{
+    using type = type_list<>;
+};
+
+template <typename... Ts, std::size_t First>
+struct sublist<type_list<Ts...>, First, 0>
+{
+    using type = std::enable_if_t < First<sizeof...(Ts), type_list<>>;
+};
+
+template <typename... Ts, std::size_t First, std::size_t Count>
+struct sublist<type_list<Ts...>, First, Count>
+{
+    using type = std::enable_if_t<
+        First + Count <= sizeof...(Ts),
+        typename decltype(details::sublist_helper<type_list<Ts...>, First>(
+            std::make_index_sequence<Count>{}))::type>;
+};
+
+template <typename TypeList, std::size_t First, std::size_t Count>
+using sublist_t = typename sublist<TypeList, First, Count>::type;
+
+namespace details
+{
+template <typename TypeList, std::size_t I>
+struct exclude_at_impl;
+
+template <typename T, typename... Rest>
+struct exclude_at_impl<utils::type_list<T, Rest...>, 0>
+{
+    using type = utils::type_list<Rest...>;
+};
+
+template <typename T1, typename T2, typename... Rest>
+struct exclude_at_impl<utils::type_list<T1, T2, Rest...>, sizeof...(Rest) + 1>
+{
+    using type =
+        sublist_t<utils::type_list<T1, T2, Rest...>, 0, sizeof...(Rest) + 1>;
+};
+
+template <typename... Ts, std::size_t I>
+struct exclude_at_impl<utils::type_list<Ts...>, I>
+{
+    using type = concatenate_t<
+        sublist_t<utils::type_list<Ts...>, 0, I>,
+        sublist_t<utils::type_list<Ts...>, I + 1, sizeof...(Ts) - I - 1>>;
+};
+
+template <typename TypeList, std::size_t I, bool>
+struct exclude_at_helper;
+
+template <typename... Ts, std::size_t I>
+struct exclude_at_helper<utils::type_list<Ts...>, I, true>
+{
+    using type = typename exclude_at_impl<utils::type_list<Ts...>, I>::type;
+};
+}  // namespace details
+
+template <typename TypeList, std::size_t I>
+struct exclude_at
+{
+    using type =
+        typename details::exclude_at_helper<TypeList, I,
+                                            (I < TypeList::size)>::type;
+};
+
+template <typename TypeList, std::size_t I>
+using exclude_at_t = typename exclude_at<TypeList, I>::type;
+
+template <typename TypeList>
+struct sort_sizeof_ascending;
+
+template <>
+struct sort_sizeof_ascending<type_list<>>
+{
+    using type = type_list<>;
+};
+
+template <typename T>
+struct sort_sizeof_ascending<type_list<T>>
+{
+    using type = type_list<T>;
+};
+
+template <typename... Ts>
+struct sort_sizeof_ascending<type_list<Ts...>>
+{
+    using type = concatenate_t<
+        type_list<typename type_list<Ts...>::template at<
+            min_sizeof_index_v<type_list<Ts...>>>>,
+        typename sort_sizeof_ascending<exclude_at_t<
+            type_list<Ts...>, min_sizeof_index_v<type_list<Ts...>>>>::type>;
+};
+
+template <typename TypeList>
+using sort_sizeof_ascending_t = typename sort_sizeof_ascending<TypeList>::type;
+
+template <typename TypeList>
+struct sort_sizeof_descending;
+
+template <>
+struct sort_sizeof_descending<type_list<>>
+{
+    using type = type_list<>;
+};
+
+template <typename T>
+struct sort_sizeof_descending<type_list<T>>
+{
+    using type = type_list<T>;
+};
+
+template <typename... Ts>
+struct sort_sizeof_descending<type_list<Ts...>>
+{
+    using type = concatenate_t<
+        type_list<typename type_list<Ts...>::template at<
+            max_sizeof_index_v<type_list<Ts...>>>>,
+        typename sort_sizeof_descending<exclude_at_t<
+            type_list<Ts...>, max_sizeof_index_v<type_list<Ts...>>>>::type>;
+};
+
+template <typename TypeList>
+using sort_sizeof_descending_t =
+    typename sort_sizeof_descending<TypeList>::type;
 
 template <typename... Ts>
 struct is_type_list : std::false_type

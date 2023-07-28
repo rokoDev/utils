@@ -7,18 +7,26 @@ include(FetchContent)
 
 cmake_path(APPEND FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}" "deps_content" "${CMAKE_GENERATOR_NAME_WITHOUT_SPACES}")
 
-FetchContent_Declare(googletest
+FetchContent_Declare(
+  googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
-	GIT_TAG c0e032efe587efa99413dd9ac54c3953a7915588)
+	GIT_TAG c0e032efe587efa99413dd9ac54c3953a7915588
+)
 
-FetchContent_MakeAvailable(googletest)
+FetchContent_Declare(
+  type_name
+  GIT_REPOSITORY https://github.com/rokoDev/type_name.git
+  GIT_TAG        05ce55919dc1dc55a3d87100f676d21c28fa42f7
+)
+
+FetchContent_MakeAvailable(googletest type_name)
 
 add_library(tests_main STATIC)
 target_sources(tests_main
   PRIVATE
   src/main_tests.cpp
   )
-target_link_libraries(tests_main PUBLIC gtest)
+target_link_libraries(tests_main PUBLIC gtest type_name)
 get_target_property(tests_main_sources tests_main SOURCES)
 source_group(
   TREE   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -135,5 +143,15 @@ package_add_test(
   EXTRA_TARGETS utils tests_main gmock
   )
 
+set(test_src
+  src/ctz_tests.cpp
+  )
+package_add_test(
+  TEST_TARGET_NAME utils_ctz_tests
+  TEST_SOURCES ${test_src}
+  EXTRA_TARGETS utils tests_main
+  )
+
 # If use IDE add gtest, gmock, gtest_main and gmock_main targets into deps/googletest group
 set_target_properties(gtest gmock gtest_main gmock_main PROPERTIES FOLDER deps/googletest)
+set_target_properties(type_name PROPERTIES FOLDER deps)

@@ -106,13 +106,13 @@ TEST(UtilsValueList, IsSame)
     {
         using value_list = utils::value_list<>;
 
-        static_assert(value_list::is_same, "invalid value");
+        static_assert(value_list::is_same_v, "invalid value");
     }
 
     {
         using value_list = utils::value_list<eFileError::kPermission>;
 
-        static_assert(value_list::is_same, "invalid value");
+        static_assert(value_list::is_same_v, "invalid value");
     }
 
     {
@@ -120,13 +120,13 @@ TEST(UtilsValueList, IsSame)
             utils::value_list<eFileError::kEOF, 0, eReaderError::kError1,
                               eFileError::kPermission>;
 
-        static_assert(not value_list::is_same, "invalid value");
+        static_assert(not value_list::is_same_v, "invalid value");
     }
 
     {
         using value_list = utils::value_list<0, 0, 0, 0, 0, 0>;
 
-        static_assert(value_list::is_same, "invalid value");
+        static_assert(value_list::is_same_v, "invalid value");
     }
 }
 

@@ -359,3 +359,35 @@ TEST(UtilsDeathTest, AbortIfMacroWithCompoundMessage)
     constexpr auto m = "abort message 5";
     ASSERT_DEATH({ UTILS_ABORT_IF(c, "abort message %d", 5); }, EXIT_MSG(m));
 }
+
+TEST(UtilsIsUIntTest, Test1)
+{
+    using utils::is_uint_v;
+
+    static_assert(not is_uint_v<bool>);
+    static_assert(not is_uint_v<float>);
+    static_assert(not is_uint_v<double>);
+    static_assert(not is_uint_v<char>);
+    static_assert(not is_uint_v<int>);
+    static_assert(not is_uint_v<std::tuple<uint8_t>>);
+    static_assert(is_uint_v<unsigned char>);
+    static_assert(is_uint_v<uint8_t>);
+    static_assert(is_uint_v<uint16_t>);
+    static_assert(is_uint_v<uint32_t>);
+    static_assert(is_uint_v<uint64_t>);
+}
+
+TEST(UtilsTest, IsEqualSizes)
+{
+    using utils::is_equal_sizes_v;
+
+    static_assert(is_equal_sizes_v<>);
+    static_assert(is_equal_sizes_v<char>);
+    static_assert(is_equal_sizes_v<bool, char>);
+    static_assert(is_equal_sizes_v<float, float>);
+    static_assert(is_equal_sizes_v<bool, char, unsigned char>);
+    static_assert(is_equal_sizes_v<bool, char, unsigned char, std::uint8_t>);
+    static_assert(not is_equal_sizes_v<bool, char, unsigned char, std::uint8_t,
+                                       std::int16_t>);
+    static_assert(not is_equal_sizes_v<bool, std::int64_t>);
+}

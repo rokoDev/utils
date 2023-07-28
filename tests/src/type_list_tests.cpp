@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <type_name/type_name.h>
 
 #include "utils/type_list.h"
 
@@ -563,4 +564,223 @@ TEST(UtilsTypeList, Concatenate)
                            concatenate_result>,
             "invalid result of concatenation");
     }
+}
+
+TEST(UtilsTypeList, MinSizeofIndex)
+{
+    using utils::min_sizeof_index_v;
+    using utils::type_list;
+
+    static_assert(min_sizeof_index_v<type_list<char>> == 0);
+    static_assert(min_sizeof_index_v<type_list<char, std::uint8_t>> == 0);
+    static_assert(min_sizeof_index_v<type_list<bool, char, std::uint8_t>> == 0);
+    static_assert(
+        min_sizeof_index_v<type_list<bool, char, std::int16_t, std::uint8_t>> ==
+        0);
+    static_assert(
+        min_sizeof_index_v<
+            type_list<std::int64_t, std::int32_t, bool, std::uint8_t>> == 2);
+    static_assert(min_sizeof_index_v<type_list<std::int64_t, std::int32_t,
+                                               std::int32_t, std::uint8_t>> ==
+                  3);
+}
+
+TEST(UtilsTypeList, MaxSizeofIndex)
+{
+    using utils::max_sizeof_index_v;
+    using utils::type_list;
+
+    static_assert(max_sizeof_index_v<type_list<char>> == 0);
+    static_assert(max_sizeof_index_v<type_list<char, std::uint8_t>> == 0);
+    static_assert(max_sizeof_index_v<type_list<bool, char, std::uint8_t>> == 0);
+    static_assert(
+        max_sizeof_index_v<type_list<bool, char, std::int16_t, std::uint8_t>> ==
+        2);
+    static_assert(
+        max_sizeof_index_v<
+            type_list<std::int64_t, std::int32_t, bool, std::uint8_t>> == 0);
+    static_assert(max_sizeof_index_v<
+                      type_list<bool, std::uint64_t, std::int64_t, std::int32_t,
+                                std::int32_t, std::uint8_t>> == 1);
+}
+
+TEST(UtilsTypeList, Sublist)
+{
+    using utils::sublist_t;
+    using utils::type_list;
+
+    static_assert(std::is_same_v<sublist_t<type_list<>, 0, 0>, type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char>, 0, 1>, type_list<char>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char>, 0, 0>, type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 0, 0>,
+                       type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 0, 1>,
+                       type_list<char>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 0, 2>,
+                       type_list<char, bool>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 0, 3>,
+                       type_list<char, bool, float>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 0, 4>,
+                       type_list<char, bool, float, char>>);
+
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 1, 0>,
+                       type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 1, 1>,
+                       type_list<bool>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 1, 2>,
+                       type_list<bool, float>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 1, 3>,
+                       type_list<bool, float, char>>);
+
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 2, 0>,
+                       type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 2, 1>,
+                       type_list<float>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 2, 2>,
+                       type_list<float, char>>);
+
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 3, 0>,
+                       type_list<>>);
+    static_assert(
+        std::is_same_v<sublist_t<type_list<char, bool, float, char>, 3, 1>,
+                       type_list<char>>);
+}
+
+TEST(UtilsTypeList, ExcludeAt)
+{
+    using utils::exclude_at_t;
+    using utils::type_list;
+
+    static_assert(
+        std::is_same_v<exclude_at_t<type_list<char>, 0>, type_list<>>);
+
+    static_assert(std::is_same_v<exclude_at_t<type_list<char, std::uint8_t>, 0>,
+                                 type_list<std::uint8_t>>);
+    static_assert(std::is_same_v<exclude_at_t<type_list<char, std::uint8_t>, 1>,
+                                 type_list<char>>);
+
+    static_assert(
+        std::is_same_v<exclude_at_t<type_list<bool, char, std::uint8_t>, 0>,
+                       type_list<char, std::uint8_t>>);
+    static_assert(
+        std::is_same_v<exclude_at_t<type_list<bool, char, std::uint8_t>, 1>,
+                       type_list<bool, std::uint8_t>>);
+    static_assert(
+        std::is_same_v<exclude_at_t<type_list<bool, char, std::uint8_t>, 2>,
+                       type_list<bool, char>>);
+
+    static_assert(
+        std::is_same_v<
+            exclude_at_t<type_list<float, char, std::int16_t, std::uint8_t>, 0>,
+            type_list<char, std::int16_t, std::uint8_t>>);
+    static_assert(
+        std::is_same_v<
+            exclude_at_t<type_list<float, char, std::int16_t, std::uint8_t>, 1>,
+            type_list<float, std::int16_t, std::uint8_t>>);
+    static_assert(
+        std::is_same_v<
+            exclude_at_t<type_list<float, char, std::int16_t, std::uint8_t>, 2>,
+            type_list<float, char, std::uint8_t>>);
+    static_assert(
+        std::is_same_v<
+            exclude_at_t<type_list<float, char, std::int16_t, std::uint8_t>, 3>,
+            type_list<float, char, std::int16_t>>);
+}
+
+TEST(UtilsTypeList, SortSizeofAscending)
+{
+    using utils::sort_sizeof_ascending_t;
+    using utils::type_list;
+
+    static_assert(
+        std::is_same_v<sort_sizeof_ascending_t<type_list<>>, type_list<>>);
+
+    static_assert(std::is_same_v<sort_sizeof_ascending_t<type_list<bool>>,
+                                 type_list<bool>>);
+    static_assert(std::is_same_v<sort_sizeof_ascending_t<type_list<bool, char>>,
+                                 type_list<bool, char>>);
+    static_assert(std::is_same_v<
+                  sort_sizeof_ascending_t<type_list<bool, char, std::int8_t>>,
+                  type_list<bool, char, std::int8_t>>);
+
+    static_assert(
+        std::is_same_v<sort_sizeof_ascending_t<type_list<bool, std::int16_t>>,
+                       type_list<bool, std::int16_t>>);
+    static_assert(
+        std::is_same_v<sort_sizeof_ascending_t<type_list<std::int16_t, bool>>,
+                       type_list<bool, std::int16_t>>);
+
+    static_assert(std::is_same_v<
+                  sort_sizeof_ascending_t<type_list<float, bool, std::int16_t>>,
+                  type_list<bool, std::int16_t, float>>);
+    static_assert(std::is_same_v<
+                  sort_sizeof_ascending_t<type_list<float, std::int16_t, bool>>,
+                  type_list<bool, std::int16_t, float>>);
+    static_assert(
+        std::is_same_v<
+            sort_sizeof_ascending_t<type_list<float, std::int16_t, bool, char>>,
+            type_list<bool, char, std::int16_t, float>>);
+    static_assert(
+        std::is_same_v<
+            sort_sizeof_ascending_t<
+                type_list<std::uint16_t, float, std::int16_t, bool, char>>,
+            type_list<bool, char, std::uint16_t, std::int16_t, float>>);
+}
+
+TEST(UtilsTypeList, SortSizeofDescending)
+{
+    using utils::sort_sizeof_descending_t;
+    using utils::type_list;
+
+    static_assert(
+        std::is_same_v<sort_sizeof_descending_t<type_list<>>, type_list<>>);
+
+    static_assert(std::is_same_v<sort_sizeof_descending_t<type_list<bool>>,
+                                 type_list<bool>>);
+    static_assert(
+        std::is_same_v<sort_sizeof_descending_t<type_list<bool, char>>,
+                       type_list<bool, char>>);
+    static_assert(std::is_same_v<
+                  sort_sizeof_descending_t<type_list<bool, char, std::int8_t>>,
+                  type_list<bool, char, std::int8_t>>);
+
+    static_assert(
+        std::is_same_v<sort_sizeof_descending_t<type_list<bool, std::int16_t>>,
+                       type_list<std::int16_t, bool>>);
+    static_assert(
+        std::is_same_v<sort_sizeof_descending_t<type_list<std::int16_t, bool>>,
+                       type_list<std::int16_t, bool>>);
+
+    static_assert(
+        std::is_same_v<
+            sort_sizeof_descending_t<type_list<float, bool, std::int16_t>>,
+            type_list<float, std::int16_t, bool>>);
+    static_assert(
+        std::is_same_v<
+            sort_sizeof_descending_t<type_list<float, std::int16_t, bool>>,
+            type_list<float, std::int16_t, bool>>);
+    static_assert(
+        std::is_same_v<sort_sizeof_descending_t<
+                           type_list<float, std::int16_t, bool, char>>,
+                       type_list<float, std::int16_t, bool, char>>);
+    static_assert(
+        std::is_same_v<
+            sort_sizeof_descending_t<
+                type_list<std::uint16_t, float, std::int16_t, bool, char>>,
+            type_list<float, std::uint16_t, std::int16_t, bool, char>>);
 }
