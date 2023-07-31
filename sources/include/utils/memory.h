@@ -6,10 +6,20 @@
 #include <cstdlib>
 #include <functional>
 
+#include "ctz.h"
+
 namespace utils
 {
 namespace memory
 {
+[[nodiscard]] inline std::size_t get_alignment(void const *const aPtr) noexcept
+{
+    assert(aPtr && "invalid pointer");
+    const auto ptrAsUInt = reinterpret_cast<std::uintptr_t>(aPtr);
+    const auto power = ctz(ptrAsUInt);
+    return std::size_t{1} << power;
+}
+
 inline void *aligned_malloc(std::size_t aSize, std::size_t aAlignment) noexcept
 {
     void *result;
@@ -59,6 +69,7 @@ class memory_resource
     }
 
    public:
+    virtual ~memory_resource() = default;
     [[nodiscard]] void *allocate(
         std::size_t aSize,
         std::size_t aAlignment = alignof(std::max_align_t)) noexcept
