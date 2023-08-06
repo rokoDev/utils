@@ -26,6 +26,7 @@ inline void *aligned_malloc(std::size_t aSize, std::size_t aAlignment) noexcept
 #ifdef _MSC_VER
     result = _aligned_malloc(aSize, aAlignment);
 #else
+    aAlignment = aAlignment >= sizeof(void *) ? aAlignment : sizeof(void *);
     if (posix_memalign(&result, aAlignment, aSize))
     {
         result = 0;
@@ -139,7 +140,7 @@ class system_memory_resource : public memory_resource
     [[nodiscard]] void *allocate_impl(std::size_t aSize,
                                       std::size_t aAlignment) noexcept
     {
-        return aligned_malloc(aAlignment, aSize);
+        return aligned_malloc(aSize, aAlignment);
     }
 
     void deallocate_impl(void *aPtr) noexcept { aligned_free(aPtr); }
