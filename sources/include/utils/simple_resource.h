@@ -3,10 +3,10 @@
 
 #include <algorithm>
 #include <bitset>
+#include <climits>
 #include <cstddef>
 #include <cstdlib>
 #include <functional>
-#include <limits>
 #include <tuple>
 
 #include "ctz.h"
