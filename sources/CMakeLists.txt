@@ -10,6 +10,7 @@ target_sources(utils
     include/utils/common.h
     include/utils/simple_resource.h
     include/utils/monotonic_buffer_resource.h
+    include/utils/allocator.h
   )
 
 set_property(TARGET utils APPEND PROPERTY SRC_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
