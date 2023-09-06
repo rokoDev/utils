@@ -1,9 +1,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <utils/utils.h>
 
 #include <string>
-
-#include "utils/utils.h"
 
 namespace
 {

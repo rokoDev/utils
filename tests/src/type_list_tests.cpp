@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <type_name/type_name.h>
-
-#include "utils/type_list.h"
+#include <utils/type_list.h>
 
 enum class eReaderError : uint8_t
 {

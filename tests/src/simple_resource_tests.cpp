@@ -1,9 +1,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <utils/memory/simple_resource.h>
 
 #include <regex>
-
-#include "utils/simple_resource.h"
 
 namespace
 {

@@ -1,7 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-
-#include "utils/monotonic_buffer_resource.h"
+#include <utils/memory/monotonic_buffer_resource.h>
 
 namespace
 {

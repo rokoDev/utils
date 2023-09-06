@@ -1,13 +1,14 @@
 #ifndef utils_h
 #define utils_h
 
-#include "allocator.h"
 #include "common.h"
 #include "ctz.h"
 #include "detector.h"
 #include "function_traits.h"
-#include "memory.h"
-#include "simple_resource.h"
+#include "memory/allocator.h"
+#include "memory/memory.h"
+#include "memory/monotonic_buffer_resource.h"
+#include "memory/simple_resource.h"
 #include "type_list.h"
 #include "value_list.h"
 

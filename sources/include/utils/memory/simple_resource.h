@@ -9,7 +9,7 @@
 #include <functional>
 #include <tuple>
 
-#include "ctz.h"
+#include "../ctz.h"
 #include "memory.h"
 
 namespace utils

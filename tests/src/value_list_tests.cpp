@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-
-#include "utils/value_list.h"
+#include <utils/value_list.h>
 
 enum class eReaderError : uint8_t
 {

@@ -1,11 +1,10 @@
 #include <gtest/gtest.h>
+#include <utils/function_traits.h>
 
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <string>
-
-#include "utils/function_traits.h"
 
 namespace
 {
