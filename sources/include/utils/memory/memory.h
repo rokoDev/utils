@@ -1,10 +1,14 @@
 #ifndef utils_memory_h
 #define utils_memory_h
 
+#include <sysops/memory_ops.h>
+
+#include <algorithm>
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
 #include <functional>
+#include <system_error>
 
 #include "../ctz.h"
 
@@ -12,22 +16,14 @@ namespace utils
 {
 namespace memory
 {
-[[nodiscard]] inline std::size_t get_alignment(void const *const aPtr) noexcept
-{
-    assert(aPtr && "invalid pointer");
-    const auto ptrAsUInt = reinterpret_cast<std::uintptr_t>(aPtr);
-    const auto power = ctz(ptrAsUInt);
-    return std::size_t{1} << power;
-}
-
 inline void *aligned_malloc(std::size_t aSize, std::size_t aAlignment) noexcept
 {
     void *result;
 #ifdef _MSC_VER
-    result = _aligned_malloc(aSize, aAlignment);
+    result = sysops::memory::ops::aligned_malloc(aSize, aAlignment);
 #else
     aAlignment = aAlignment >= sizeof(void *) ? aAlignment : sizeof(void *);
-    if (posix_memalign(&result, aAlignment, aSize))
+    if (sysops::memory::ops::posix_memalign(&result, aAlignment, aSize))
     {
         result = 0;
     }
@@ -38,10 +34,18 @@ inline void *aligned_malloc(std::size_t aSize, std::size_t aAlignment) noexcept
 inline void aligned_free(void *aPtr) noexcept
 {
 #ifdef _MSC_VER
-    _aligned_free(aPtr);
+    sysops::memory::ops::aligned_free(aPtr);
 #else
-    free(aPtr);
+    sysops::memory::ops::free(aPtr);
 #endif
+}
+
+[[nodiscard]] inline std::size_t get_alignment(void const *const aPtr) noexcept
+{
+    assert(aPtr && "invalid pointer");
+    const auto ptrAsUInt = reinterpret_cast<std::uintptr_t>(aPtr);
+    const auto power = ctz(ptrAsUInt);
+    return std::size_t{1} << power;
 }
 
 class memory_resource
