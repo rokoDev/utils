@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <functional>
 #include <system_error>
+#include <type_traits>
 
 #include "../ctz.h"
 
@@ -38,6 +39,31 @@ inline void aligned_free(void *aPtr) noexcept
 #else
     sysops::memory::ops::free(aPtr);
 #endif
+}
+
+inline constexpr void secure_zero_memory(std::byte *aPtr,
+                                         std::size_t aSize) noexcept
+{
+    if (!aPtr || !aSize)
+    {
+        return;
+    }
+
+    if (__builtin_is_constant_evaluated())
+    {
+        for (std::size_t i = 0; i < aSize; ++i)
+        {
+            *(aPtr + i) = std::byte{};
+        }
+    }
+    else
+    {
+#ifdef _MSC_VER
+        sysops::memory::ops::SecureZeroMemory(aPtr, aSize);
+#else
+        sysops::memory::ops::memset_s(aPtr, aSize, '\0', aSize);
+#endif
+    }
 }
 
 [[nodiscard]] inline std::size_t get_alignment(void const *const aPtr) noexcept
