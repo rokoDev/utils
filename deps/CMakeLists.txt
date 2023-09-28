@@ -7,7 +7,7 @@ cmake_path(APPEND FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/../" "deps_content"
 FetchContent_Declare(
 	sysops
 	GIT_REPOSITORY https://github.com/rokoDev/sysops.git
-	GIT_TAG        efabaf0253c5cb766f03d5ec93d242820d261e8e
+	GIT_TAG        550c69cfb875deb4b2ccb5e22864ae34b6a96364
 )
 
 # If necessary it's possible to use sysops from different location instead of downloaded from GitHub

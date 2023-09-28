@@ -49,19 +49,29 @@ inline constexpr void secure_zero_memory(std::byte *aPtr,
         return;
     }
 
+    const auto handmade_zero_mem =
+        [](std::byte *aBuf, std::size_t aBufSize) noexcept
+    {
+        for (std::size_t i = 0; i < aBufSize; ++i)
+        {
+            *(aBuf + i) = std::byte{};
+        }
+    };
+
     if (__builtin_is_constant_evaluated())
     {
-        for (std::size_t i = 0; i < aSize; ++i)
-        {
-            *(aPtr + i) = std::byte{};
-        }
+        handmade_zero_mem(aPtr, aSize);
     }
     else
     {
 #ifdef _MSC_VER
         sysops::memory::ops::SecureZeroMemory(aPtr, aSize);
 #else
+#ifdef __STDC_LIB_EXT1__
         sysops::memory::ops::memset_s(aPtr, aSize, '\0', aSize);
+#else
+        handmade_zero_mem(aPtr, aSize);
+#endif
 #endif
     }
 }
