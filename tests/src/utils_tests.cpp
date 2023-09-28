@@ -390,3 +390,95 @@ TEST(UtilsTest, IsEqualSizes)
                                        std::int16_t>);
     static_assert(not is_equal_sizes_v<bool, std::int64_t>);
 }
+
+TEST(UtilsTest, DivInt)
+{
+    using ValueT = int;
+    ValueT numerator{10};
+    ValueT denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(quot), const ValueT>);
+    static_assert(std::is_same_v<decltype(rem), const ValueT>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivLong)
+{
+    using ValueT = long;
+    ValueT numerator{10};
+    ValueT denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(quot), const ValueT>);
+    static_assert(std::is_same_v<decltype(rem), const ValueT>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivLongLong)
+{
+    using ValueT = long long;
+    ValueT numerator{10};
+    ValueT denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(quot), const ValueT>);
+    static_assert(std::is_same_v<decltype(rem), const ValueT>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivChar)
+{
+    using ValueT = char;
+    ValueT numerator{10};
+    ValueT denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(quot), const int>);
+    static_assert(std::is_same_v<decltype(rem), const int>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivIntConstexpr)
+{
+    using ValueT = int;
+    constexpr ValueT numerator{10};
+    constexpr ValueT denominator{3};
+    constexpr auto result = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(result), const ::div_t>);
+    ASSERT_EQ(result.quot, 3);
+    ASSERT_EQ(result.rem, 1);
+}
+
+TEST(UtilsTest, DivLongConstexpr)
+{
+    using ValueT = long;
+    constexpr ValueT numerator{10};
+    constexpr ValueT denominator{3};
+    constexpr auto result = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(result), const ::ldiv_t>);
+    ASSERT_EQ(result.quot, 3);
+    ASSERT_EQ(result.rem, 1);
+}
+
+TEST(UtilsTest, DivLongLongConstexpr)
+{
+    using ValueT = long long;
+    constexpr ValueT numerator{10};
+    constexpr ValueT denominator{3};
+    constexpr auto result = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(result), const ::lldiv_t>);
+    ASSERT_EQ(result.quot, 3);
+    ASSERT_EQ(result.rem, 1);
+}
+
+TEST(UtilsTest, DivCharConstexpr)
+{
+    using ValueT = char;
+    constexpr ValueT numerator{10};
+    constexpr ValueT denominator{3};
+    constexpr auto result = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<decltype(result), const ::div_t>);
+    ASSERT_EQ(result.quot, 3);
+    ASSERT_EQ(result.rem, 1);
+}
