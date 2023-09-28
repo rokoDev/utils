@@ -741,6 +741,75 @@ constexpr decltype(auto) div(T aNumerator, T aDenominator) noexcept
         return std::div(aNumerator, aDenominator);
     }
 }
+
+template <typename T>
+inline constexpr decltype(auto) shift_right(T&& aValue,
+                                            const std::size_t aNumBits) noexcept
+{
+    using ValueT = remove_cvref_t<T>;
+    static_assert(
+        std::conjunction_v<std::is_integral<ValueT>,
+                           std::negation<std::is_same<ValueT, bool>>>);
+    assert(aNumBits < sizeof(ValueT) * CHAR_BIT);
+    return static_cast<ValueT>(aValue >> aNumBits);
+}
+
+template <typename T>
+inline constexpr decltype(auto) shift_left(T&& aValue,
+                                           const std::size_t aNumBits) noexcept
+{
+    using ValueT = remove_cvref_t<T>;
+    static_assert(
+        std::conjunction_v<std::is_integral<ValueT>,
+                           std::negation<std::is_same<ValueT, bool>>>);
+    assert(aNumBits < sizeof(ValueT) * CHAR_BIT);
+    return static_cast<ValueT>(aValue << aNumBits);
+}
+
+namespace details
+{
+template <typename T, std::size_t... I>
+constexpr decltype(auto) bytes_to_integral_impl(
+    std::byte const* aSrc, std::index_sequence<I...>) noexcept
+{
+    static_assert(sizeof...(I) <= sizeof(T));
+    T value = (... | shift_left(std::to_integer<T>(*(aSrc + I)), I * CHAR_BIT));
+    return value;
+}
+
+template <typename T, std::size_t... I>
+constexpr void integral_to_bytes_impl(std::byte* aDst, T&& aValue,
+                                      std::index_sequence<I...>) noexcept
+{
+    static_assert(sizeof...(I) <= sizeof(T));
+    ([](std::byte* aDestination, T& aVal) noexcept
+     { *(aDestination + I) = static_cast<std::byte>(aVal >> I * CHAR_BIT); }(
+         aDst, aValue),
+     ...);
+}
+}  // namespace details
+
+template <std::size_t NBytes, typename T>
+constexpr T bytes_to_integral(std::byte const* aSrc) noexcept
+{
+    static_assert(std::conjunction_v<std::is_integral<T>,
+                                     std::negation<std::is_same<T, bool>>>);
+    static_assert(NBytes <= sizeof(T));
+    using Indices = std::make_index_sequence<NBytes>;
+    return details::bytes_to_integral_impl<T>(aSrc, Indices{});
+}
+
+template <std::size_t NBytes, typename T>
+constexpr void integral_to_bytes(std::byte* aDst, T&& aValue) noexcept
+{
+    using ValueT = remove_cvref_t<T>;
+    static_assert(
+        std::conjunction_v<std::is_integral<ValueT>,
+                           std::negation<std::is_same<ValueT, bool>>>);
+    static_assert(NBytes <= sizeof(ValueT));
+    using Indices = std::make_index_sequence<NBytes>;
+    details::integral_to_bytes_impl(aDst, std::forward<T>(aValue), Indices{});
+}
 }  // namespace utils
 
 #endif /* utils_common_h */
