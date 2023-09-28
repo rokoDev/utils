@@ -50,6 +50,20 @@ constexpr bool is_zero_buf(const std::array<std::byte, N>& aBuf) noexcept
     return true;
 }
 
+template <std::size_t N>
+constexpr decltype(auto) constexpr_memmove() noexcept
+{
+    const std::size_t kBufSize = 16;
+    std::array<std::byte, kBufSize> buf{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        buf[i] = std::byte{static_cast<uint8_t>(i)};
+    }
+
+    utils::memory::memmove(buf.data(), buf.data() + 5, 10);
+    return buf;
+}
+
 }  // namespace
 
 TEST_P(Validate, For)
@@ -86,4 +100,38 @@ TEST(MemoryTests, SecureZeroMemConstexpr)
     bool isZeroBuf = is_zero_buf(buf);
 
     ASSERT_TRUE(isZeroBuf);
+}
+
+TEST(MemoryTests, Memmove)
+{
+    const std::size_t kBufSize = 16;
+    std::array<std::byte, kBufSize> buf;
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        buf[i] = std::byte{static_cast<uint8_t>(i)};
+    }
+
+    utils::memory::memmove(buf.data(), buf.data() + 5, 10);
+
+    constexpr std::array<std::byte, kBufSize> expected{
+        std::byte{5},  std::byte{6},  std::byte{7},  std::byte{8},
+        std::byte{9},  std::byte{10}, std::byte{11}, std::byte{12},
+        std::byte{13}, std::byte{14}, std::byte{10}, std::byte{11},
+        std::byte{12}, std::byte{13}, std::byte{14}, std::byte{15}};
+
+    ASSERT_EQ(buf, expected);
+}
+
+TEST(MemoryTests, MemmoveConstexpr)
+{
+    const std::size_t kBufSize = 16;
+    constexpr auto buf = constexpr_memmove<kBufSize>();
+
+    constexpr std::array<std::byte, kBufSize> expected{
+        std::byte{5},  std::byte{6},  std::byte{7},  std::byte{8},
+        std::byte{9},  std::byte{10}, std::byte{11}, std::byte{12},
+        std::byte{13}, std::byte{14}, std::byte{10}, std::byte{11},
+        std::byte{12}, std::byte{13}, std::byte{14}, std::byte{15}};
+
+    ASSERT_EQ(buf, expected);
 }

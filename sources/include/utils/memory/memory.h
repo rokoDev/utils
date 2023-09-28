@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <system_error>
 #include <type_traits>
@@ -73,6 +74,27 @@ inline constexpr void secure_zero_memory(std::byte *aPtr,
         handmade_zero_mem(aPtr, aSize);
 #endif
 #endif
+    }
+}
+
+constexpr std::byte *memmove(std::byte *aDst, const std::byte *aSrc,
+                             std::size_t aCount) noexcept
+{
+    if (__builtin_is_constant_evaluated())
+    {
+        if (aDst == aSrc)
+        {
+            return aDst;
+        }
+        for (std::size_t i = 0; i < aCount; ++i)
+        {
+            *(aDst + i) = *(aSrc + i);
+        }
+        return aDst;
+    }
+    else
+    {
+        return static_cast<std::byte *>(std::memmove(aDst, aSrc, aCount));
     }
 }
 
