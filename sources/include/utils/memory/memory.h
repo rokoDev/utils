@@ -170,8 +170,8 @@ class memory_resource
     deallocate_t deallocate_{};
 };
 
-memory_resource *system_memory_resource() noexcept;
-memory_resource *null_memory_resource() noexcept;
+static memory_resource *system_memory_resource() noexcept;
+static memory_resource *null_memory_resource() noexcept;
 
 namespace details
 {
@@ -238,24 +238,25 @@ class null_memory_resource : public memory_resource
 };
 }  // namespace details
 
-memory_resource *system_memory_resource() noexcept
+[[maybe_unused]] static memory_resource *system_memory_resource() noexcept
 {
     static details::system_memory_resource r;
     return &r;
 }
 
-memory_resource *null_memory_resource() noexcept
+[[maybe_unused]] static memory_resource *null_memory_resource() noexcept
 {
     static details::null_memory_resource r;
     return &r;
 }
 
-memory_resource *set_default_resource(memory_resource *aResource) noexcept
+[[maybe_unused]] static memory_resource *set_default_resource(
+    memory_resource *aResource) noexcept
 {
     return details::default_resource.exchange(aResource);
 }
 
-memory_resource *get_default_resource() noexcept
+[[maybe_unused]] static memory_resource *get_default_resource() noexcept
 {
     return details::default_resource.load();
 }

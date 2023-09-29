@@ -339,7 +339,8 @@ inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
     return aValue && ((aValue & (aValue - 1)) == 0);
 }
 
-uintptr_t skip_to_align(void const* aPtr, const std::size_t aAlignment) noexcept
+[[maybe_unused]] static inline uintptr_t skip_to_align(
+    void const* aPtr, const std::size_t aAlignment) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
     const uintptr_t ptrAsUInt = reinterpret_cast<uintptr_t>(aPtr);
