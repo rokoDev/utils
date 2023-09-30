@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
