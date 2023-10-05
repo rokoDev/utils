@@ -89,46 +89,55 @@ struct value_list
     {
     };
 
-    template <typename T, T Min, auto... V>
-    struct min_impl;
-
-    template <typename T, T Min, T V1, auto... V>
-    struct min_impl<T, Min, V1, V...>
-        : std::conditional_t<(type_list<decltype(V)...>::template count_of_impl<
-                                  T, decltype(V)...>::value > 0),
-                             min_impl<T, std::min(Min, V1), V...>,
-                             std::integral_constant<T, std::min(Min, V1)>>
+    template <typename T, auto V>
+    struct all_of_impl
     {
+        using type = ::utils::value_list<>;
     };
 
-    template <typename T, typename U, T Min, U V1, auto... V>
-    struct min_impl<T, Min, V1, V...>
-        : std::conditional_t<(type_list<decltype(V)...>::template count_of_impl<
-                                  T, decltype(V)...>::value > 0),
-                             min_impl<T, Min, V...>,
-                             std::integral_constant<T, Min>>
+    template <typename T, T V>
+    struct all_of_impl<T, V>
     {
+        using type = ::utils::value_list<V>;
     };
 
-    template <typename T, T Max, auto... V>
-    struct max_impl;
+    template <typename T, auto V>
+    using all_of_impl_t = typename all_of_impl<T, V>::type;
 
-    template <typename T, T Max, T V1, auto... V>
-    struct max_impl<T, Max, V1, V...>
-        : std::conditional_t<(type_list<decltype(V)...>::template count_of_impl<
-                                  T, decltype(V)...>::value > 0),
-                             max_impl<T, std::max(Max, V1), V...>,
-                             std::integral_constant<T, std::max(Max, V1)>>
+    template <typename T, auto... Vs>
+    struct all_of
     {
+        using type = concatenate_t<all_of_impl_t<T, Vs>...>;
     };
 
-    template <typename T, typename U, T Max, U V1, auto... V>
-    struct max_impl<T, Max, V1, V...>
-        : std::conditional_t<(type_list<decltype(V)...>::template count_of_impl<
-                                  T, decltype(V)...>::value > 0),
-                             max_impl<T, Max, V...>,
-                             std::integral_constant<T, Max>>
+    template <typename T>
+    struct all_of<T>
     {
+        using type = ::utils::value_list<>;
+    };
+
+    template <typename T, auto... Vs>
+    struct min_impl
+    {
+        using list_of_T = typename all_of<T, Vs...>::type;
+        template <typename ValueList, std::size_t... I>
+        static constexpr std::integral_constant<
+            T, std::min({ValueList::template at<I>...})>
+            calc_min(std::index_sequence<I...>) noexcept;
+        static constexpr T value = decltype(calc_min<list_of_T>(
+            std::make_index_sequence<list_of_T::size>{}))::value;
+    };
+
+    template <typename T, auto... Vs>
+    struct max_impl
+    {
+        using list_of_T = typename all_of<T, Vs...>::type;
+        template <typename ValueList, std::size_t... I>
+        static constexpr std::integral_constant<
+            T, std::max({ValueList::template at<I>...})>
+            calc_min(std::index_sequence<I...>) noexcept;
+        static constexpr T value = decltype(calc_min<list_of_T>(
+            std::make_index_sequence<list_of_T::size>{}))::value;
     };
 };
 }  // namespace details
@@ -172,14 +181,19 @@ struct value_list
         type_list<decltype(Values)...>::template contains_v<T>;
 
     template <typename T>
-    static constexpr T min = impl::template min_impl<
-        T, at<type_list<decltype(Values)...>::template first_index_of_type<T>>,
-        Values...>::value;
+    static constexpr T min = impl::template min_impl<T, Values...>::value;
 
     template <typename T>
-    static constexpr auto max = impl::template max_impl<
-        T, at<type_list<decltype(Values)...>::template first_index_of_type<T>>,
-        Values...>::value;
+    static constexpr auto max = impl::template max_impl<T, Values...>::value;
+
+    template <typename T>
+    struct list_all_of
+    {
+        using type = typename impl::template all_of<T, Values...>::type;
+    };
+
+    template <typename T>
+    using list_all_of_t = typename list_all_of<T>::type;
 };
 
 template <typename T>

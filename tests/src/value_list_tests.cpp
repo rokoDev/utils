@@ -349,3 +349,46 @@ TEST(UtilsValueList, MaxValueOfTypeT)
                       "invalid value");
     }
 }
+
+TEST(UtilsValueList, AllOfTypeT)
+{
+    {
+        using empty_list = utils::value_list<>;
+
+        static_assert(
+            std::is_same_v<empty_list::list_all_of_t<eFileError>, empty_list>);
+        static_assert(
+            std::is_same_v<empty_list::list_all_of_t<int>, empty_list>);
+    }
+
+    {
+        using value_list = utils::value_list<eFileError::kPermission>;
+        using empty_list = utils::value_list<>;
+
+        static_assert(
+            std::is_same_v<value_list::list_all_of_t<eFileError>, value_list>);
+        static_assert(
+            std::is_same_v<value_list::list_all_of_t<int>, empty_list>);
+    }
+
+    {
+        using value_list =
+            utils::value_list<eFileError::kEOF, 10, eReaderError::kError2,
+                              eFileError::kPermission, eWriterError::kError5,
+                              eReaderError::kError1, eFileError::kEOF>;
+
+        static_assert(
+            std::is_same_v<
+                value_list::list_all_of_t<eFileError>,
+                utils::value_list<eFileError::kEOF, eFileError::kPermission,
+                                  eFileError::kEOF>>);
+
+        static_assert(std::is_same_v<value_list::list_all_of_t<eReaderError>,
+                                     utils::value_list<eReaderError::kError2,
+                                                       eReaderError::kError1>>);
+        static_assert(std::is_same_v<value_list::list_all_of_t<eWriterError>,
+                                     utils::value_list<eWriterError::kError5>>);
+        static_assert(std::is_same_v<value_list::list_all_of_t<float>,
+                                     utils::value_list<>>);
+    }
+}
