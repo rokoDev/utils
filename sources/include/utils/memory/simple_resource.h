@@ -150,12 +150,7 @@ class simple_resource : public memory_resource
     using BIndex = uint_from_nbits_t<bits_count(MaxBlockCount - 1)>;
     struct block_info
     {
-        friend void simple_resource::set_prev(const BIndex,
-                                              const BIndex) noexcept;
-        friend void simple_resource::set_next(const BIndex,
-                                              const BIndex) noexcept;
-        friend void simple_resource::set_prev_next(const BIndex, const BIndex,
-                                                   const BIndex) noexcept;
+        friend class simple_resource;
 
        public:
         inline BIndex prev_index() const noexcept { return prev_index_; }

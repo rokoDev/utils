@@ -286,7 +286,7 @@ template <typename T, typename... Rest, std::size_t... I>
 constexpr std::size_t min_sizeof_index_impl(std::index_sequence<I...>) noexcept
 {
     std::size_t index = 0;
-    std::size_t min_sizeof = sizeof(T);
+    [[maybe_unused]] std::size_t min_sizeof = sizeof(T);
 
     (...,
      [&index, &min_sizeof]()
@@ -305,7 +305,7 @@ template <typename T, typename... Rest, std::size_t... I>
 constexpr std::size_t max_sizeof_index_impl(std::index_sequence<I...>) noexcept
 {
     std::size_t index = 0;
-    std::size_t max_sizeof = sizeof(T);
+    [[maybe_unused]] std::size_t max_sizeof = sizeof(T);
 
     (...,
      [&index, &max_sizeof]()

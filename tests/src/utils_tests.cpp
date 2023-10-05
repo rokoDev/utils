@@ -366,7 +366,7 @@ TEST(UtilsIsUIntTest, Test1)
     static_assert(not is_uint_v<bool>);
     static_assert(not is_uint_v<float>);
     static_assert(not is_uint_v<double>);
-    static_assert(not is_uint_v<char>);
+    static_assert(not is_uint_v<signed char>);
     static_assert(not is_uint_v<int>);
     static_assert(not is_uint_v<std::tuple<uint8_t>>);
     static_assert(is_uint_v<unsigned char>);
@@ -429,7 +429,7 @@ TEST(UtilsTest, DivLongLong)
 
 TEST(UtilsTest, DivChar)
 {
-    using ValueT = char;
+    using ValueT = signed char;
     ValueT numerator{10};
     ValueT denominator{3};
     const auto [quot, rem] = utils::div(numerator, denominator);
@@ -474,7 +474,7 @@ TEST(UtilsTest, DivLongLongConstexpr)
 
 TEST(UtilsTest, DivCharConstexpr)
 {
-    using ValueT = char;
+    using ValueT = signed char;
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);

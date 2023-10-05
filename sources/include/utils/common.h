@@ -161,7 +161,7 @@ constexpr decltype(auto) make_element_for_index(T&& aValue) noexcept
 
 template <typename T, std::size_t... I>
 constexpr std::array<T, sizeof...(I)> make_array_with_value_impl(
-    T aValue, std::index_sequence<I...>) noexcept
+    [[maybe_unused]] T aValue, std::index_sequence<I...>) noexcept
 {
     return {make_element_for_index<T, I>(std::move(aValue))...};
 }
