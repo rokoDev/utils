@@ -191,7 +191,7 @@ constexpr auto make_num_bits_table() noexcept
         std::make_index_sequence<std::numeric_limits<uint8_t>::max() + 1>;
     return make_num_bits_table_impl(Indices{});
 }
-}  //  namespace details
+}  // namespace details
 
 template <typename Array, typename... RestArrays>
 constexpr auto concatenate_arrays(Array&& aArray,
@@ -221,6 +221,30 @@ constexpr auto make_array(T aValue)
 {
     return details::make_array_with_value_impl<T>(
         aValue, std::make_index_sequence<N>{});
+}
+
+namespace details
+{
+template <typename CharT, typename Traits, std::size_t... I>
+constexpr auto make_array_from_sv(std::basic_string_view<CharT, Traits> aSV,
+                                  std::index_sequence<I...>) noexcept
+{
+    if constexpr (sizeof...(I))
+    {
+        return make_array(aSV[I]...);
+    }
+    else
+    {
+        return std::array<CharT, 0>{};
+    }
+}
+}  // namespace details
+
+template <std::size_t N, typename CharT, typename Traits>
+constexpr auto make_array(std::basic_string_view<CharT, Traits> aSV) noexcept
+{
+    assert(N <= aSV.size());
+    return details::make_array_from_sv(aSV, std::make_index_sequence<N>{});
 }
 
 template <auto Begin, auto End, auto Step = 1,

@@ -5,6 +5,7 @@
 namespace
 {
 using ::testing::StrEq;
+using namespace std::string_view_literals;
 
 #define EXIT_MSG(x) \
     StrEq(std::string("[ERROR]\n" UTILS_FILE_LINE "\nfunc: ") + UTILS_FUNC + x)
@@ -16,6 +17,36 @@ TEST(UtilsTest, MakeEmptyArray)
     static_assert(
         std::is_same_v<decltype(emptyArr), const std::array<std::uint8_t, 0>>,
         "Invalid type.");
+}
+
+TEST(UtilsTest, MakeArrayFromEmptyStringView)
+{
+    constexpr std::string_view str = ""sv;
+    constexpr auto arr = utils::make_array<str.size()>(str);
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 0>>);
+}
+
+TEST(UtilsTest, MakeArrayFromStringView1)
+{
+    constexpr std::string_view str = "f"sv;
+    constexpr auto arr = utils::make_array<str.size()>(str);
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 1>>);
+    static_assert(arr[0] == 'f');
+}
+
+TEST(UtilsTest, MakeArrayFromStringView2)
+{
+    constexpr std::string_view str = "10101111"sv;
+    constexpr auto arr = utils::make_array<str.size()>(str);
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 8>>);
+    static_assert(arr[0] == '1');
+    static_assert(arr[1] == '0');
+    static_assert(arr[2] == '1');
+    static_assert(arr[3] == '0');
+    static_assert(arr[4] == '1');
+    static_assert(arr[5] == '1');
+    static_assert(arr[6] == '1');
+    static_assert(arr[7] == '1');
 }
 
 TEST(UtilsTest, MakeArrayWithEqValues1)
