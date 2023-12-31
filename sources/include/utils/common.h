@@ -225,26 +225,27 @@ constexpr auto make_array(T aValue)
 
 namespace details
 {
-template <typename CharT, typename Traits, std::size_t... I>
+template <typename ValueType, typename CharT, typename Traits, std::size_t... I>
 constexpr auto make_array_from_sv(std::basic_string_view<CharT, Traits> aSV,
                                   std::index_sequence<I...>) noexcept
 {
     if constexpr (sizeof...(I))
     {
-        return make_array(aSV[I]...);
+        return make_array(static_cast<ValueType>(aSV[I])...);
     }
     else
     {
-        return std::array<CharT, 0>{};
+        return std::array<ValueType, 0>{};
     }
 }
 }  // namespace details
 
-template <std::size_t N, typename CharT, typename Traits>
+template <std::size_t N, typename ValueType, typename CharT, typename Traits>
 constexpr auto make_array(std::basic_string_view<CharT, Traits> aSV) noexcept
 {
     assert(N <= aSV.size());
-    return details::make_array_from_sv(aSV, std::make_index_sequence<N>{});
+    return details::make_array_from_sv<ValueType>(
+        aSV, std::make_index_sequence<N>{});
 }
 
 template <auto Begin, auto End, auto Step = 1,

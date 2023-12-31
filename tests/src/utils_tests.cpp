@@ -22,14 +22,14 @@ TEST(UtilsTest, MakeEmptyArray)
 TEST(UtilsTest, MakeArrayFromEmptyStringView)
 {
     constexpr std::string_view str = ""sv;
-    constexpr auto arr = utils::make_array<str.size()>(str);
+    constexpr auto arr = utils::make_array<str.size(), char>(str);
     static_assert(std::is_same_v<decltype(arr), const std::array<char, 0>>);
 }
 
 TEST(UtilsTest, MakeArrayFromStringView1)
 {
     constexpr std::string_view str = "f"sv;
-    constexpr auto arr = utils::make_array<str.size()>(str);
+    constexpr auto arr = utils::make_array<str.size(), char>(str);
     static_assert(std::is_same_v<decltype(arr), const std::array<char, 1>>);
     static_assert(arr[0] == 'f');
 }
@@ -37,7 +37,7 @@ TEST(UtilsTest, MakeArrayFromStringView1)
 TEST(UtilsTest, MakeArrayFromStringView2)
 {
     constexpr std::string_view str = "10101111"sv;
-    constexpr auto arr = utils::make_array<str.size()>(str);
+    constexpr auto arr = utils::make_array<str.size(), char>(str);
     static_assert(std::is_same_v<decltype(arr), const std::array<char, 8>>);
     static_assert(arr[0] == '1');
     static_assert(arr[1] == '0');
@@ -47,6 +47,30 @@ TEST(UtilsTest, MakeArrayFromStringView2)
     static_assert(arr[5] == '1');
     static_assert(arr[6] == '1');
     static_assert(arr[7] == '1');
+}
+
+TEST(UtilsTest, MakeByteArrayFromEmptyStringView)
+{
+    constexpr std::string_view str = ""sv;
+    constexpr auto arr = utils::make_array<str.size(), std::byte>(str);
+    static_assert(
+        std::is_same_v<decltype(arr), const std::array<std::byte, 0>>);
+}
+
+TEST(UtilsTest, MakeByteArrayFromStringView2)
+{
+    constexpr std::string_view str = "10101111"sv;
+    constexpr auto arr = utils::make_array<str.size(), std::byte>(str);
+    static_assert(
+        std::is_same_v<decltype(arr), const std::array<std::byte, 8>>);
+    static_assert(arr[0] == std::byte{'1'});
+    static_assert(arr[1] == std::byte{'0'});
+    static_assert(arr[2] == std::byte{'1'});
+    static_assert(arr[3] == std::byte{'0'});
+    static_assert(arr[4] == std::byte{'1'});
+    static_assert(arr[5] == std::byte{'1'});
+    static_assert(arr[6] == std::byte{'1'});
+    static_assert(arr[7] == std::byte{'1'});
 }
 
 TEST(UtilsTest, MakeArrayWithEqValues1)
