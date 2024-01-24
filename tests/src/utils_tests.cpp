@@ -537,3 +537,15 @@ TEST(UtilsTest, DivCharConstexpr)
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
 }
+
+TEST(UtilsTest, IsUintOrByte)
+{
+    static_assert(utils::is_uint_or_byte_v<std::uint8_t>);
+    static_assert(utils::is_uint_or_byte_v<std::uint16_t>);
+    static_assert(utils::is_uint_or_byte_v<std::uint32_t>);
+    static_assert(utils::is_uint_or_byte_v<std::uint64_t>);
+    static_assert(utils::is_uint_or_byte_v<std::byte>);
+    static_assert(utils::is_uint_or_byte_v<unsigned int>);
+    static_assert(not utils::is_uint_or_byte_v<float>);
+    static_assert(not utils::is_uint_or_byte_v<int>);
+}

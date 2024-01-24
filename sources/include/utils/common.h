@@ -66,6 +66,15 @@ struct is_uint
 template <typename T>
 inline constexpr bool is_uint_v = is_uint<T>::value;
 
+template <typename T>
+struct is_uint_or_byte
+    : std::disjunction<is_uint<T>, std::is_same<T, std::byte>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_uint_or_byte_v = is_uint_or_byte<T>::value;
+
 template <typename... Ts>
 struct is_equal_sizes : value_list<sizeof(Ts)...>::is_same
 {
