@@ -669,17 +669,26 @@ template <typename Values1, typename Values2>
 using cartesian_product_2_t =
     typename cartesian_product_2<Values1, Values2>::type;
 
+template <typename Values, typename... RestValues>
+struct cartesian_product;
+
+template <auto... Values>
+struct cartesian_product<value_list<Values...>>
+{
+    using type = type_list<value_list<Values>...>;
+};
+
 template <typename Values1, typename Values2, typename... RestValues>
-struct cartesian_product
+struct cartesian_product<Values1, Values2, RestValues...>
 {
     using type =
         typename multiply_type_list<cartesian_product_2_t<Values1, Values2>,
                                     RestValues...>::type;
 };
 
-template <typename Values1, typename Values2, typename... RestValues>
+template <typename Values, typename... RestValues>
 using cartesian_product_t =
-    typename cartesian_product<Values1, Values2, RestValues...>::type;
+    typename cartesian_product<Values, RestValues...>::type;
 
 template <auto First, auto Last, typename = std::enable_if_t<Last >= First>>
 struct values_in_range
