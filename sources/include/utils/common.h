@@ -549,6 +549,30 @@ constexpr std::size_t num_bits<bool>()
     return 1;
 }
 
+template <typename T>
+struct div_t
+{
+    T quot;
+    T rem;
+};
+
+template <typename T>
+div_t(const T&, const T&) -> div_t<std::enable_if_t<std::is_integral_v<T>, T>>;
+
+template <typename T, typename U>
+div_t(T, U) -> div_t<std::enable_if_t<
+    std::is_integral_v<decltype(std::declval<T>() / std::declval<U>())>,
+    decltype(std::declval<T>() / std::declval<U>())>>;
+
+template <typename T, typename U>
+constexpr decltype(auto) div(T aNumerator, U aDenominator) noexcept
+{
+    assert(aDenominator != 0);
+    static_assert(std::is_integral_v<T>);
+    static_assert(std::is_integral_v<U>);
+    return div_t{aNumerator / aDenominator, aNumerator % aDenominator};
+}
+
 template <typename... Ts>
 constexpr std::size_t sum_size()
 {
@@ -750,42 +774,6 @@ struct unwrap_reference<std::reference_wrapper<T>>
 
 template <typename T>
 using unwrap_reference_t = typename unwrap_reference<T>::type;
-
-template <typename T>
-constexpr decltype(auto) div(T aNumerator, T aDenominator) noexcept
-{
-    static_assert(std::is_signed_v<T>);
-    if (__builtin_is_constant_evaluated())
-    {
-        if constexpr (std::is_same_v<T, int> || (sizeof(T) < sizeof(int)))
-        {
-            return ::div_t{aNumerator / aDenominator,
-                           aNumerator % aDenominator};
-            ;
-        }
-        else if constexpr (std::is_same_v<T, long>)
-        {
-            return ::ldiv_t{aNumerator / aDenominator,
-                            aNumerator % aDenominator};
-        }
-        else if constexpr (std::is_same_v<T, long long>)
-        {
-            return ::lldiv_t{aNumerator / aDenominator,
-                             aNumerator % aDenominator};
-        }
-        else
-        {
-            static_assert(std::disjunction_v<
-                          std::bool_constant<(sizeof(T) < sizeof(int))>,
-                          std::is_same<T, int>, std::is_same<T, long>,
-                          std::is_same<T, long long>>);
-        }
-    }
-    else
-    {
-        return std::div(aNumerator, aDenominator);
-    }
-}
 
 template <typename T>
 inline constexpr decltype(auto) shift_right(T&& aValue,

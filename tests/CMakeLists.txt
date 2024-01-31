@@ -17,14 +17,20 @@ FetchContent_Declare(
   GIT_TAG        05ce55919dc1dc55a3d87100f676d21c28fa42f7
 )
 
-FetchContent_MakeAvailable(googletest type_name)
+FetchContent_Declare(
+  user_literals
+  GIT_REPOSITORY https://github.com/rokoDev/user_literals.git
+  GIT_TAG        4064baa2bacba91eb424a4fa5bbdb9ae019c0e0b
+)
+
+FetchContent_MakeAvailable(googletest type_name user_literals)
 
 add_library(tests_main STATIC)
 target_sources(tests_main
   PRIVATE
   src/main_tests.cpp
   )
-target_link_libraries(tests_main PUBLIC gtest type_name)
+target_link_libraries(tests_main PUBLIC gtest type_name user_literals)
 get_target_property(tests_main_sources tests_main SOURCES)
 source_group(
   TREE   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -178,5 +184,5 @@ package_add_test(
   )
 
 # If use IDE add gtest, gmock, gtest_main and gmock_main targets into deps/googletest group
-set_target_properties(gtest gmock gtest_main gmock_main PROPERTIES FOLDER deps/googletest)
-set_target_properties(type_name PROPERTIES FOLDER deps)
+set_target_properties(gtest gmock gtest_main gmock_main PROPERTIES FOLDER tests/deps/googletest)
+set_target_properties(type_name user_literals PROPERTIES FOLDER tests/deps)

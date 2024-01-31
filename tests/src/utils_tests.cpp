@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <user_literals/user_literals.h>
 #include <utils/utils.h>
 
 namespace
@@ -500,7 +501,7 @@ TEST(UtilsTest, DivIntConstexpr)
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(result), const ::div_t>);
+    static_assert(std::is_same_v<decltype(result), const utils::div_t<ValueT>>);
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
 }
@@ -511,7 +512,7 @@ TEST(UtilsTest, DivLongConstexpr)
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(result), const ::ldiv_t>);
+    static_assert(std::is_same_v<decltype(result), const utils::div_t<ValueT>>);
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
 }
@@ -522,7 +523,7 @@ TEST(UtilsTest, DivLongLongConstexpr)
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(result), const ::lldiv_t>);
+    static_assert(std::is_same_v<decltype(result), const utils::div_t<ValueT>>);
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
 }
@@ -533,9 +534,72 @@ TEST(UtilsTest, DivCharConstexpr)
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(result), const ::div_t>);
+    static_assert(std::is_same_v<decltype(result), const utils::div_t<int>>);
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
+}
+
+TEST(UtilsTest, DivTCreation)
+{
+    static_assert(
+        std::is_same_v<decltype(utils::div_t{1, 1}), utils::div_t<int>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u8, 1_u8}),
+                                 utils::div_t<std::uint8_t>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u16, 1_u16}),
+                                 utils::div_t<std::uint16_t>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u32, 1_u32}),
+                                 utils::div_t<std::uint32_t>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u64, 1_u64}),
+                                 utils::div_t<std::uint64_t>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u64, 1_i32}),
+                                 utils::div_t<std::uint64_t>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u8, 1_u16}),
+                                 utils::div_t<decltype(1_u8 / 1_u16)>>);
+    static_assert(std::is_same_v<decltype(utils::div_t{1_u32, 1_u8}),
+                                 utils::div_t<decltype(1_u32 / 1_u8)>>);
+
+    {
+        const int &q = 1;
+        const int &r = 1;
+        static_assert(
+            std::is_same_v<decltype(utils::div_t{q, r}), utils::div_t<int>>);
+    }
+
+    {
+        const std::uint16_t &q = 1_u16;
+        const int &r = 1;
+        static_assert(std::is_same_v<decltype(utils::div_t{q, r}),
+                                     utils::div_t<decltype(1_u16 / 1)>>);
+    }
+
+    {
+        const std::int64_t &q = 1;
+        static_assert(std::is_same_v<decltype(utils::div_t{q, 1}),
+                                     utils::div_t<std::int64_t>>);
+    }
+
+    {
+        const int &r = 1;
+        static_assert(
+            std::is_same_v<decltype(utils::div_t{1, r}), utils::div_t<int>>);
+    }
+
+    {
+        int a = 1;
+        int b = 1;
+        int &q = a;
+        int &r = b;
+        static_assert(
+            std::is_same_v<decltype(utils::div_t{q, r}), utils::div_t<int>>);
+    }
+
+    {
+        std::uint8_t q = 1;
+        std::uint8_t r = 1;
+        static_assert(
+            std::is_same_v<decltype(utils::div_t{std::move(q), std::move(r)}),
+                           utils::div_t<std::uint8_t>>);
+    }
 }
 
 TEST(UtilsTest, IsUintOrByte)
