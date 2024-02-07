@@ -177,19 +177,19 @@ struct type_list
 };
 }  // namespace details
 
-template <auto... Values>
+template <decltype(auto)... Values>
 struct value_list;
 
 template <typename... Ts>
 struct concatenate;
 
-template <auto... V>
+template <decltype(auto)... V>
 struct concatenate<value_list<V...>>
 {
     using type = value_list<V...>;
 };
 
-template <auto... V1, auto... V2, typename... Ts>
+template <decltype(auto)... V1, decltype(auto)... V2, typename... Ts>
 struct concatenate<value_list<V1...>, value_list<V2...>, Ts...>
 {
     using type = typename concatenate<value_list<V1..., V2...>, Ts...>::type;

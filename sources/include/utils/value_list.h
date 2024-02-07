@@ -2,6 +2,7 @@
 #define utils_value_list_h
 
 #include <cstddef>
+#include <tuple>
 #include <type_traits>
 
 #include "type_list.h"
@@ -10,23 +11,15 @@ namespace utils
 {
 namespace details
 {
-template <auto... Values>
+template <decltype(auto)... Values>
 struct value_list
 {
-    template <std::size_t Index, auto... U>
-    struct at_impl;
+    template <std::size_t I>
+    using at_t = std::tuple_element_t<I, std::tuple<decltype(Values)...>>;
 
-    template <auto U, auto... V>
-    struct at_impl<0, U, V...>
-    {
-        static constexpr auto value = U;
-    };
-
-    template <std::size_t Index, auto U, auto... V>
-    struct at_impl<Index, U, V...>
-    {
-        static constexpr auto value = at_impl<Index - 1, V...>::value;
-    };
+    template <std::size_t I>
+    static constexpr at_t<I> at_v =
+        std::get<I>(std::tuple<decltype(Values)...>(Values...));
 
     template <typename U, typename V, U u, V v>
     struct is_same_impl_impl : std::false_type
@@ -38,15 +31,15 @@ struct value_list
     {
     };
 
-    template <auto V1, auto V2>
+    template <decltype(auto) V1, decltype(auto) V2>
     struct is_same_impl : is_same_impl_impl<decltype(V1), decltype(V2), V1, V2>
     {
     };
 
-    template <auto V1, auto V2>
+    template <decltype(auto) V1, decltype(auto) V2>
     static constexpr std::size_t is_same_impl_v = is_same_impl<V1, V2>::value;
 
-    template <auto Value, auto... Vs>
+    template <decltype(auto) Value, decltype(auto)... Vs>
     struct count_of_impl
         : std::integral_constant<std::size_t, (0 + ... +
                                                static_cast<std::size_t>(
@@ -54,34 +47,35 @@ struct value_list
     {
     };
 
-    template <auto... Vs>
+    template <decltype(auto)... Vs>
     struct is_all_same_impl : std::true_type
     {
     };
 
-    template <auto Value, auto... Vs>
+    template <decltype(auto) Value, decltype(auto)... Vs>
     struct is_all_same_impl<Value, Vs...>
         : std::conjunction<is_same_impl<Value, Vs>...>
     {
     };
 
-    template <auto Value, auto... Vs>
+    template <decltype(auto) Value, decltype(auto)... Vs>
     struct more_than_once
         : std::bool_constant<(count_of_impl<Value, Vs...>::value > 1)>
     {
     };
 
-    template <auto Value, auto... Vs>
+    template <decltype(auto) Value, decltype(auto)... Vs>
     struct contains_impl : std::disjunction<is_same_impl<Value, Vs>...>
     {
     };
 
-    template <std::size_t I, auto U, auto... V>
+    template <std::size_t I, decltype(auto) U, decltype(auto)... V>
     struct index_of_impl : std::integral_constant<std::size_t, I>
     {
     };
 
-    template <std::size_t I, auto U, auto V1, auto... V>
+    template <std::size_t I, decltype(auto) U, decltype(auto) V1,
+              decltype(auto)... V>
     struct index_of_impl<I, U, V1, V...>
         : std::conditional_t<is_same_impl_v<U, V1>,
                              std::integral_constant<std::size_t, I>,
@@ -89,7 +83,7 @@ struct value_list
     {
     };
 
-    template <typename T, auto V>
+    template <typename T, decltype(auto) V>
     struct all_of_impl
     {
         using type = ::utils::value_list<>;
@@ -101,10 +95,10 @@ struct value_list
         using type = ::utils::value_list<V>;
     };
 
-    template <typename T, auto V>
+    template <typename T, decltype(auto) V>
     using all_of_impl_t = typename all_of_impl<T, V>::type;
 
-    template <typename T, auto... Vs>
+    template <typename T, decltype(auto)... Vs>
     struct all_of
     {
         using type = concatenate_t<all_of_impl_t<T, Vs>...>;
@@ -116,7 +110,7 @@ struct value_list
         using type = ::utils::value_list<>;
     };
 
-    template <typename T, auto... Vs>
+    template <typename T, decltype(auto)... Vs>
     struct min_impl
     {
         using list_of_T = typename all_of<T, Vs...>::type;
@@ -128,7 +122,7 @@ struct value_list
             std::make_index_sequence<list_of_T::size>{}))::value;
     };
 
-    template <typename T, auto... Vs>
+    template <typename T, decltype(auto)... Vs>
     struct max_impl
     {
         using list_of_T = typename all_of<T, Vs...>::type;
@@ -142,7 +136,7 @@ struct value_list
 };
 }  // namespace details
 
-template <auto... Values>
+template <decltype(auto)... Values>
 struct value_list
 {
    private:
@@ -152,9 +146,12 @@ struct value_list
     static constexpr std::size_t size = sizeof...(Values);
 
     template <std::size_t I>
-    static constexpr auto at = impl::template at_impl<I, Values...>::value;
+    static constexpr decltype(auto) at = impl::template at_v<I>;
 
-    template <auto Value>
+    template <std::size_t I>
+    using at_t = typename impl::template at_t<I>;
+
+    template <decltype(auto) Value>
     static constexpr std::size_t index_of =
         impl::template index_of_impl<0, Value, Values...>::value;
 
@@ -163,14 +160,14 @@ struct value_list
     };
     static constexpr bool is_same_v = is_same::value;
 
-    template <auto Value>
+    template <decltype(auto) Value>
     static constexpr std::size_t count_of =
         impl::template count_of_impl<Value, Values...>::value;
 
-    template <auto Value>
+    template <decltype(auto) Value>
     using contains = typename impl::template contains_impl<Value, Values...>;
 
-    template <auto Value>
+    template <decltype(auto) Value>
     static constexpr bool contains_v = contains<Value>::value;
 
     static constexpr bool contains_copies = std::disjunction_v<
@@ -184,7 +181,7 @@ struct value_list
     static constexpr T min = impl::template min_impl<T, Values...>::value;
 
     template <typename T>
-    static constexpr auto max = impl::template max_impl<T, Values...>::value;
+    static constexpr T max = impl::template max_impl<T, Values...>::value;
 
     template <typename T>
     struct list_all_of
@@ -201,7 +198,7 @@ struct is_value_list : std::false_type
 {
 };
 
-template <auto... Values>
+template <decltype(auto)... Values>
 struct is_value_list<value_list<Values...>> : std::true_type
 {
 };
