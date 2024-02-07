@@ -14,13 +14,6 @@ namespace details
 template <decltype(auto)... Values>
 struct value_list
 {
-    template <std::size_t I>
-    using at_t = std::tuple_element_t<I, std::tuple<decltype(Values)...>>;
-
-    template <std::size_t I>
-    static constexpr at_t<I> at_v =
-        std::get<I>(std::tuple<decltype(Values)...>(Values...));
-
     template <typename U, typename V, U u, V v>
     struct is_same_impl_impl : std::false_type
     {
@@ -146,10 +139,11 @@ struct value_list
     static constexpr std::size_t size = sizeof...(Values);
 
     template <std::size_t I>
-    static constexpr decltype(auto) at = impl::template at_v<I>;
+    using at_t = std::tuple_element_t<I, std::tuple<decltype(Values)...>>;
 
     template <std::size_t I>
-    using at_t = typename impl::template at_t<I>;
+    static constexpr at_t<I> at =
+        std::get<I>(std::tuple<decltype(Values)...>(Values...));
 
     template <decltype(auto) Value>
     static constexpr std::size_t index_of =

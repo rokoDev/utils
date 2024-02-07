@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
-	GIT_TAG 530d5c8c84abd2a46f38583ee817743c9b3a42b4
+	GIT_TAG 64be1c79fa2cea015d816687120878a110775351
 )
 
 FetchContent_Declare(

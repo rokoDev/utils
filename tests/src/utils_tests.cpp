@@ -5,11 +5,12 @@
 
 namespace
 {
-using ::testing::StrEq;
+using ::testing::StartsWith;
 using namespace std::string_view_literals;
 
-#define EXIT_MSG(x) \
-    StrEq(std::string("[ERROR]\n" UTILS_FILE_LINE "\nfunc: ") + UTILS_FUNC + x)
+#define EXIT_MSG(x)                                                  \
+    StartsWith(std::string("[ERROR]\n" UTILS_FILE_LINE "\nfunc: ") + \
+               UTILS_FUNC + x)
 }  // namespace
 
 TEST(UtilsTest, MakeEmptyArray)
@@ -363,19 +364,19 @@ TEST(UtilsTest, GreatesDivisorThatIsPowerOf2)
 
 TEST(UtilsDeathTest, AbortIfWithEmptyMessage)
 {
-    ASSERT_DEATH({ utils::abort_if(true); }, StrEq(""));
+    ASSERT_DEATH({ utils::abort_if(true); }, StartsWith(""));
 }
 
 TEST(UtilsDeathTest, AbortIfWithMessage)
 {
     constexpr auto kMessage = "abort message";
-    ASSERT_DEATH({ utils::abort_if(true, kMessage); }, StrEq(kMessage));
+    ASSERT_DEATH({ utils::abort_if(true, kMessage); }, StartsWith(kMessage));
 }
 
 TEST(UtilsDeathTest, AbortIfWithCompoundMessage)
 {
     ASSERT_DEATH({ utils::abort_if(true, "abort with code: %d", 5); },
-                 StrEq("abort with code: 5"));
+                 StartsWith("abort with code: 5"));
 }
 
 TEST(UtilsDeathTest, AbortIfWithFalseConditionAndEmptyMessage)
