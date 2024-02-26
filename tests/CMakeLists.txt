@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
-	GIT_TAG 64be1c79fa2cea015d816687120878a110775351
+	GIT_TAG 9d43b27f7a873596496a2ea70721b3f9eb82df01
 )
 
 FetchContent_Declare(
@@ -68,7 +68,7 @@ function(package_add_test)
   target_sources(${TEST_TARGET_NAME} PRIVATE ${TEST_SOURCES})
   target_include_directories(${TEST_TARGET_NAME} PUBLIC include)
   foreach(target_to_link IN LISTS EXTRA_TARGETS)
-      target_link_libraries(${TEST_TARGET_NAME} PUBLIC ${target_to_link})
+      target_link_libraries(${TEST_TARGET_NAME} PRIVATE ${target_to_link})
   endforeach()
 
   foreach(define IN LISTS DEFS)

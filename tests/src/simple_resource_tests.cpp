@@ -766,7 +766,7 @@ TEST_F(FreeRegionIsTheWholeOfResource, AllocateTooBigPieceOfMemory)
 MATCHER(DestructingWhileInUse, "")
 {
     std::regex re(
-        R"pattern(^\[ERROR\][\s\S]*\nreason: simple_resource is being destroyed while [\d]+ of its regions are in use\.$)pattern");
+        R"pattern(^\[ERROR\][\s\S]*\nreason: simple_resource is being destroyed while [\d]+ of its regions are in use\.[\s\S]*$)pattern");
     std::smatch m;
     return std::regex_match(arg, m, re);
 }
@@ -782,7 +782,7 @@ TEST_F(NaiveMemoryResourceDeathTest,
 MATCHER(PointerIsLessThanLeftBoundary, "")
 {
     std::regex re(
-        R"pattern(^\[ERROR\][\s\S]*\nreason: deallocating pointer\([a-zA-Z0-9]+\) is less than simple_resource's left boundary\([a-zA-Z0-9]+\)$)pattern");
+        R"pattern(^\[ERROR\][\s\S]*\nreason: deallocating pointer\([a-zA-Z0-9]+\) is less than simple_resource's left boundary\([a-zA-Z0-9]+\)[\s\S]*$)pattern");
     std::smatch m;
     return std::regex_match(arg, m, re);
 }
@@ -800,7 +800,7 @@ TEST_F(NaiveMemoryResourceDeathTest, DeallocatePointerThatLessThanLeftBoundary)
 MATCHER(PointerIsMoreThanRightBoundary, "")
 {
     std::regex re(
-        R"pattern(^\[ERROR\][\s\S]*\nreason: deallocating pointer\([a-zA-Z0-9]+\) is more than simple_resource's right boundary\([a-zA-Z0-9]+\)$)pattern");
+        R"pattern(^\[ERROR\][\s\S]*\nreason: deallocating pointer\([a-zA-Z0-9]+\) is more than simple_resource's right boundary\([a-zA-Z0-9]+\)[\s\S]*$)pattern");
     std::smatch m;
     return std::regex_match(arg, m, re);
 }
@@ -818,7 +818,7 @@ TEST_F(NaiveMemoryResourceDeathTest, DeallocatePointerThatMoreThanRightBoundary)
 MATCHER(DeallocatingWrongAlignedPointer, "")
 {
     std::regex re(
-        R"pattern(^\[ERROR\][\s\S]*\nreason: pointer\([a-zA-Z0-9]+\) which is being deallocated must be aligned at least as one block size\([\d]+\)$)pattern");
+        R"pattern(^\[ERROR\][\s\S]*\nreason: pointer\([a-zA-Z0-9]+\) which is being deallocated must be aligned at least as one block size\([\d]+\)[\s\S]*$)pattern");
     std::smatch m;
     return std::regex_match(arg, m, re);
 }
@@ -837,7 +837,7 @@ TEST_F(NaiveMemoryResourceDeathTest,
 MATCHER(DeallocatingNotAllocatedPointer, "")
 {
     std::regex re(
-        R"pattern(^\[ERROR\][\s\S]*\nreason: trying to deallocate block\([\d]+\) that was not marked as allocated$)pattern");
+        R"pattern(^\[ERROR\][\s\S]*\nreason: trying to deallocate block\([\d]+\) that was not marked as allocated[\s\S]*$)pattern");
     std::smatch m;
     return std::regex_match(arg, m, re);
 }
