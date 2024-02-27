@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ctz.h"
 #include "detector.h"
+#include "fast_pimpl.h"
 #include "function_traits.h"
 #include "memory/allocator.h"
 #include "memory/memory.h"

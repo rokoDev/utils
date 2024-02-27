@@ -175,6 +175,15 @@ package_add_test(
   )
 
 set(test_src
+  src/fast_pimpl_tests.cpp
+  )
+package_add_test(
+  TEST_TARGET_NAME utils_fast_pimpl_tests
+  TEST_SOURCES ${test_src}
+  EXTRA_TARGETS utils tests_main
+  )
+
+set(test_src
   src/monotonic_buffer_resource_tests.cpp
   )
 package_add_test(
