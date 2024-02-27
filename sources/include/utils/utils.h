@@ -9,6 +9,7 @@
 #include "memory/memory.h"
 #include "memory/monotonic_buffer_resource.h"
 #include "memory/simple_resource.h"
+#include "timer.h"
 #include "type_list.h"
 #include "value_list.h"
 
