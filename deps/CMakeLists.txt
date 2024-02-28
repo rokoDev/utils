@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
 	sysops
 	GIT_REPOSITORY https://github.com/rokoDev/sysops.git
-	GIT_TAG        818446dfd204babe847212b9a430088aa163a946
+	GIT_TAG        b892538a36c4ec55cab20161dfc16816fc9ccbd3
 )
 
 # If necessary it's possible to use sysops from different location instead of downloaded from GitHub
