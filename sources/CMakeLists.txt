@@ -5,7 +5,9 @@ target_sources(utils
     include/utils/value_list.h
     include/utils/function_traits.h
     include/utils/detector.h
+    include/utils/details/cxz.h
     include/utils/ctz.h
+    include/utils/clz.h
     include/utils/common.h
     include/utils/memory/memory.h
     include/utils/memory/simple_resource.h

@@ -1,6 +1,7 @@
 #ifndef utils_h
 #define utils_h
 
+#include "clz.h"
 #include "common.h"
 #include "ctz.h"
 #include "detector.h"

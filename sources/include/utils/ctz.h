@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "common.h"
+#include "details/cxz.h"
 #include "type_list.h"
 
 namespace utils
@@ -130,14 +131,6 @@ constexpr decltype(auto) calc_ctz<unsigned long long>(
 }  // namespace details
 
 #endif
-
-namespace details
-{
-template <typename T, typename IntT>
-struct less_eq_pred : std::bool_constant<sizeof(IntT) <= sizeof(T)>
-{
-};
-}  // namespace details
 
 template <typename T, typename = std::enable_if_t<is_uint_v<T>>>
 constexpr decltype(auto) ctz(T aValue) noexcept
