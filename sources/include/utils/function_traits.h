@@ -32,8 +32,306 @@
     X(, volatile, &&, noexcept)     \
     X(const, volatile, &&, noexcept)
 
+#define CREATE_MEMBER_TYPE_CHECKERS(member_type)                            \
+    namespace details                                                       \
+    {                                                                       \
+    template <typename T>                                                   \
+    using has_type_##member_type##_helper = typename T::member_type;        \
+    }                                                                       \
+                                                                            \
+    template <typename T>                                                   \
+    struct has_type_##member_type                                           \
+        : ::utils::is_detected<details::has_type_##member_type##_helper, T> \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename T>                                                   \
+    inline constexpr bool has_type_##member_type##_v =                      \
+        has_type_##member_type<T>::value;                                   \
+                                                                            \
+    template <typename T, typename Expected>                                \
+    struct has_exact_type_##member_type                                     \
+        : ::utils::is_detected_exact<                                       \
+              Expected, details::has_type_##member_type##_helper, T>        \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename T, typename Expected>                                \
+    inline constexpr bool has_exact_type_##member_type##_v =                \
+        has_exact_type_##member_type<T, Expected>::value;                   \
+                                                                            \
+    template <typename T, typename To>                                      \
+    struct has_convertible_type_##member_type                               \
+        : ::utils::is_detected_convertible<                                 \
+              To, details::has_type_##member_type##_helper, T>              \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename T, typename To>                                      \
+    inline constexpr bool has_convertible_type_##member_type##_v =          \
+        has_convertible_type_##member_type<T, To>::value;
+
+#define CREATE_MEMBER_DATA_CHECKERS(member_data)                       \
+    namespace details                                                  \
+    {                                                                  \
+    template <typename T>                                              \
+    using not_static_##member_data##_type = decltype(&T::member_data); \
+                                                                       \
+    template <typename T, bool>                                        \
+    struct has_data_##member_data : std::false_type                    \
+    {                                                                  \
+    };                                                                 \
+                                                                       \
+    template <typename T>                                              \
+    struct has_data_##member_data<T, true>                             \
+        : ::utils::details::is_member_data_pointer<                    \
+              not_static_##member_data##_type<T>>                      \
+    {                                                                  \
+    };                                                                 \
+    }                                                                  \
+                                                                       \
+    template <typename T>                                              \
+    struct has_data_##member_data                                      \
+        : details::has_data_##member_data<                             \
+              T, ::utils::is_detected_v<                               \
+                     details::not_static_##member_data##_type, T>>     \
+    {                                                                  \
+    };                                                                 \
+                                                                       \
+    template <typename T>                                              \
+    inline constexpr bool has_data_##member_data##_v =                 \
+        has_data_##member_data<T>::value;
+
+#define CREATE_STATIC_MEMBER_DATA_CHECKERS(static_member_data)        \
+    namespace details                                                 \
+    {                                                                 \
+    template <typename T>                                             \
+    using static_##static_member_data##_type =                        \
+        decltype(&T::static_member_data);                             \
+                                                                      \
+    template <typename T, bool>                                       \
+    struct has_static_data_##static_member_data : std::false_type     \
+    {                                                                 \
+    };                                                                \
+                                                                      \
+    template <typename T>                                             \
+    struct has_static_data_##static_member_data<T, true>              \
+        : ::utils::details::is_data_pointer<                          \
+              static_##static_member_data##_type<T>>                  \
+    {                                                                 \
+    };                                                                \
+    }                                                                 \
+                                                                      \
+    template <typename T>                                             \
+    struct has_static_data_##static_member_data                       \
+        : details::has_static_data_##static_member_data<              \
+              T, ::utils::is_detected_v<                              \
+                     details::static_##static_member_data##_type, T>> \
+    {                                                                 \
+    };                                                                \
+                                                                      \
+    template <typename T>                                             \
+    inline constexpr bool has_static_data_##static_member_data##_v =  \
+        has_static_data_##static_member_data<T>::value;
+
+#define SYMBOLIZED_QUALIFIERS(member_name)                                     \
+    X_IMPL(member_name, , , , , , , , )                                        \
+    X_IMPL(member_name, _const, , , , const, , , )                             \
+    X_IMPL(member_name, , _volatile, , , , volatile, , )                       \
+    X_IMPL(member_name, _const, _volatile, , , const, volatile, , )            \
+    X_IMPL(member_name, , , _ref, , , , &, )                                   \
+    X_IMPL(member_name, _const, , _ref, , const, , &, )                        \
+    X_IMPL(member_name, , _volatile, _ref, , , volatile, &, )                  \
+    X_IMPL(member_name, _const, _volatile, _ref, , const, volatile, &, )       \
+    X_IMPL(member_name, , , _rref, , , , &&, )                                 \
+    X_IMPL(member_name, _const, , _rref, , const, , &&, )                      \
+    X_IMPL(member_name, , _volatile, _rref, , , volatile, &&, )                \
+    X_IMPL(member_name, _const, _volatile, _rref, , const, volatile, &&, )     \
+    X_IMPL(member_name, , , , _noexcept, , , , noexcept)                       \
+    X_IMPL(member_name, _const, , , _noexcept, const, , , noexcept)            \
+    X_IMPL(member_name, , _volatile, , _noexcept, , volatile, , noexcept)      \
+    X_IMPL(member_name, _const, _volatile, , _noexcept, const, volatile, ,     \
+           noexcept)                                                           \
+    X_IMPL(member_name, , , _ref, _noexcept, , , &, noexcept)                  \
+    X_IMPL(member_name, _const, , _ref, _noexcept, const, , &, noexcept)       \
+    X_IMPL(member_name, , _volatile, _ref, _noexcept, , volatile, &, noexcept) \
+    X_IMPL(member_name, _const, _volatile, _ref, _noexcept, const,             \
+           volatile, &, noexcept)                                              \
+    X_IMPL(member_name, , , _rref, _noexcept, , , &&, noexcept)                \
+    X_IMPL(member_name, _const, , _rref, _noexcept, const, , &&, noexcept)     \
+    X_IMPL(member_name, , _volatile, _rref, _noexcept, , volatile, &&,         \
+           noexcept)                                                           \
+    X_IMPL(member_name, _const, _volatile, _rref, _noexcept, const, volatile,  \
+           &&, noexcept)
+
+#define SYMBOLIZED_STATIC_METHOD_QUALIFIERS(member_name) \
+    S_IMPL(member_name, , )                              \
+    S_IMPL(member_name, _noexcept, noexcept)
+
 namespace utils
 {
+namespace function_traits
+{
+#define X_IMPL(member_name, sc, sv, sr, sn, c, v, r, n) \
+    template <typename R, typename T, typename... Args> \
+    using method_pointer##sc##sv##sr##sn = R (T::*)(Args...) c v r n;
+SYMBOLIZED_QUALIFIERS(unused)
+#undef X_IMPL
+
+#define S_IMPL(member_name, sn, n)          \
+    template <typename R, typename... Args> \
+    using static_method_pointer##sn = R (*)(Args...) n;
+SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
+#undef S_IMPL
+}  // namespace function_traits
+}  // namespace utils
+
+#define X_IMPL(method_name, sc, sv, sr, sn, c, v, r, n)                     \
+    namespace details                                                       \
+    {                                                                       \
+    template <typename R, typename T, typename... Args>                     \
+    using method_##method_name##sc##sv##sr##sn##_ptr_t =                    \
+        decltype(::utils::function_traits::method_pointer##sc##sv##sr##sn<  \
+                 R, T, Args...>{&T::method_name});                          \
+    }                                                                       \
+                                                                            \
+    template <typename R, typename T, typename... Args>                     \
+    struct has_invocable_##method_name##sc##sv##sr##sn                      \
+        : ::utils::is_detected<                                             \
+              details::method_##method_name##sc##sv##sr##sn##_ptr_t, R, T,  \
+              Args...>                                                      \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename R, typename T, typename... Args>                     \
+    inline constexpr bool has_invocable_##method_name##sc##sv##sr##sn##_v = \
+        has_invocable_##method_name##sc##sv##sr##sn<R, T, Args...>::value;
+
+#define CREATE_METHOD_CHECKERS(method_name) SYMBOLIZED_QUALIFIERS(method_name)
+
+#define S_IMPL(method_name, sn, n)                                             \
+    namespace details                                                          \
+    {                                                                          \
+    template <typename T, typename... Args>                                    \
+    using static_method_result_##method_name##sn##_t = std::conditional_t<     \
+        ::utils::function_traits::details::has_noexcept_v<                     \
+            decltype(UTILS_TO_STR(n))>,                                        \
+        std::bool_constant<noexcept(T::method_name(std::declval<Args>()...))>, \
+        std::true_type>;                                                       \
+                                                                               \
+    template <typename R, typename T, typename... Args>                        \
+    using static_method_r_##method_name##sn##_ptr_t = decltype(                \
+        ::utils::function_traits::static_method_pointer##sn<R, Args...>{       \
+            &T::method_name});                                                 \
+    }                                                                          \
+                                                                               \
+    template <typename T, typename... Args>                                    \
+    struct has_static_invocable_##method_name##sn                              \
+        : ::utils::is_detected_convertible<                                    \
+              std::true_type,                                                  \
+              details::static_method_result_##method_name##sn##_t, T, Args...> \
+    {                                                                          \
+    };                                                                         \
+                                                                               \
+    template <typename T, typename... Args>                                    \
+    inline constexpr bool has_static_invocable_##method_name##sn##_v =         \
+        has_static_invocable_##method_name##sn<T, Args...>::value;             \
+                                                                               \
+    template <typename R, typename T, typename... Args>                        \
+    struct has_static_invocable_r_##method_name##sn                            \
+        : ::utils::is_detected<                                                \
+              details::static_method_r_##method_name##sn##_ptr_t, R, T,        \
+              Args...>                                                         \
+    {                                                                          \
+    };                                                                         \
+                                                                               \
+    template <typename R, typename T, typename... Args>                        \
+    inline constexpr bool has_static_invocable_r_##method_name##sn##_v =       \
+        has_static_invocable_r_##method_name##sn<R, T, Args...>::value;
+
+#define CREATE_STATIC_METHOD_CHECKERS(method_name) \
+    SYMBOLIZED_STATIC_METHOD_QUALIFIERS(method_name)
+
+#define CREATE_FREE_FUNCTION_CHECKERS(function_name)                        \
+    namespace details                                                       \
+    {                                                                       \
+    template <typename... Args>                                             \
+    using function_name##_return_t =                                        \
+        decltype(function_name(std::declval<Args>()...));                   \
+                                                                            \
+    template <typename... Args>                                             \
+    using function_name##_noexcept_return_t =                               \
+        std::enable_if_t<noexcept(function_name(std::declval<Args>()...)),  \
+                         decltype(function_name(std::declval<Args>()...))>; \
+    }                                                                       \
+                                                                            \
+    template <typename... Args>                                             \
+    struct is_##function_name##_invocable                                   \
+        : ::utils::is_detected<details::function_name##_return_t, Args...>  \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename... Args>                                             \
+    inline constexpr bool is_##function_name##_invocable_v =                \
+        is_##function_name##_invocable<Args...>::value;                     \
+                                                                            \
+    template <typename... Args>                                             \
+    struct is_##function_name##_noexcept_invocable                          \
+        : ::utils::is_detected<details::function_name##_noexcept_return_t,  \
+                               Args...>                                     \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename... Args>                                             \
+    inline constexpr bool is_##function_name##_noexcept_invocable_v =       \
+        is_##function_name##_noexcept_invocable<Args...>::value;            \
+                                                                            \
+    template <typename R, typename... Args>                                 \
+    struct is_##function_name##_invocable_r                                 \
+        : ::utils::is_detected_exact<R, details::function_name##_return_t,  \
+                                     Args...>                               \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename R, typename... Args>                                 \
+    inline constexpr bool is_##function_name##_invocable_r_v =              \
+        is_##function_name##_invocable_r<R, Args...>::value;                \
+                                                                            \
+    template <typename R, typename... Args>                                 \
+    struct is_##function_name##_noexcept_invocable_r                        \
+        : ::utils::is_detected_exact<                                       \
+              R, details::function_name##_noexcept_return_t, Args...>       \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename R, typename... Args>                                 \
+    inline constexpr bool is_##function_name##_noexcept_invocable_r_v =     \
+        is_##function_name##_noexcept_invocable_r<R, Args...>::value;
+
+namespace utils
+{
+namespace details
+{
+template <typename T>
+struct is_data_pointer : std::false_type
+{
+};
+
+template <typename MemT>
+struct is_data_pointer<MemT *> : std::negation<std::is_function<MemT>>
+{
+};
+
+template <typename T>
+struct is_member_data_pointer : std::false_type
+{
+};
+
+template <typename MemT, typename T>
+struct is_member_data_pointer<MemT T::*> : std::negation<std::is_function<MemT>>
+{
+};
+}  // namespace details
 namespace function_traits
 {
 namespace details
@@ -176,8 +474,22 @@ using functor_signature_t = typename functor_signature<T>::type;
 
 template <typename T>
 struct is_invocable
-    : std::bool_constant<
-          std::disjunction_v<std::is_function<T>, is_simple_functor<T>>>
+    : std::disjunction<std::is_function<T>, is_simple_functor<T>>
+{
+};
+
+template <typename T, typename U>
+struct is_invocable<U T::*> : std::is_function<U>
+{
+};
+
+template <typename R, typename... Args>
+struct is_invocable<R (*)(Args...)> : std::true_type
+{
+};
+
+template <typename R, typename... Args>
+struct is_invocable<R (*)(Args...) noexcept> : std::true_type
 {
 };
 

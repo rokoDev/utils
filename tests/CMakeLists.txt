@@ -122,6 +122,11 @@ package_add_test(
 
 set(test_src
   src/function_traits_tests.cpp
+  src/function_traits_member_type_checkers_tests.cpp
+  src/function_traits_method_checkers_tests.cpp
+  src/function_traits_static_method_checkers_tests.cpp
+  src/function_traits_member_data_checkers_tests.cpp
+  src/function_traits_static_member_data_checkers_tests.cpp
   )
 package_add_test(
   TEST_TARGET_NAME utils_function_traits_tests

@@ -101,6 +101,9 @@ struct is_std_array<std::array<DataT, Size>> : std::true_type
 {
 };
 
+template <typename T>
+inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
+
 template <class T>
 struct remove_cvref
 {
@@ -109,9 +112,6 @@ struct remove_cvref
 
 template <class T>
 using remove_cvref_t = typename remove_cvref<T>::type;
-
-template <typename T>
-inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
 
 template <typename T>
 inline constexpr std::size_t std_array_size_v =
