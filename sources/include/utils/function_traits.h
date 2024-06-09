@@ -186,28 +186,64 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
 }  // namespace function_traits
 }  // namespace utils
 
-#define X_IMPL(method_name, sc, sv, sr, sn, c, v, r, n)                     \
+#define X_IMPL(method_name, sc, sv, sr, sn, c, v, r, n)                       \
+    namespace details                                                         \
+    {                                                                         \
+    template <typename R, typename T, typename... Args>                       \
+    using method_##method_name##sc##sv##sr##sn##_ptr_t =                      \
+        decltype(::utils::function_traits::method_pointer##sc##sv##sr##sn<    \
+                 R, T, Args...>{&T::method_name});                            \
+    }                                                                         \
+                                                                              \
+    template <typename R, typename T, typename... Args>                       \
+    struct has_invocable_r_##method_name##sc##sv##sr##sn                      \
+        : ::utils::is_detected<                                               \
+              details::method_##method_name##sc##sv##sr##sn##_ptr_t, R, T,    \
+              Args...>                                                        \
+    {                                                                         \
+    };                                                                        \
+                                                                              \
+    template <typename R, typename T, typename... Args>                       \
+    inline constexpr bool has_invocable_r_##method_name##sc##sv##sr##sn##_v = \
+        has_invocable_r_##method_name##sc##sv##sr##sn<R, T, Args...>::value;
+
+#define CREATE_R_METHOD_CHECKERS(method_name) SYMBOLIZED_QUALIFIERS(method_name)
+
+#define CREATE_METHOD_CHECKERS(method_name)                                 \
     namespace details                                                       \
     {                                                                       \
-    template <typename R, typename T, typename... Args>                     \
-    using method_##method_name##sc##sv##sr##sn##_ptr_t =                    \
-        decltype(::utils::function_traits::method_pointer##sc##sv##sr##sn<  \
-                 R, T, Args...>{&T::method_name});                          \
+    template <typename T, typename... Args>                                 \
+    using is_invocable_##method_name##_t =                                  \
+        decltype(std::declval<T>().method_name(std::declval<Args>()...));   \
+                                                                            \
+    template <typename T, typename... Args>                                 \
+    using is_invocable_##method_name##_noexcept_t =                         \
+        std::bool_constant<noexcept(                                        \
+            std::declval<T>().method_name(std::declval<Args>()...))>;       \
     }                                                                       \
                                                                             \
-    template <typename R, typename T, typename... Args>                     \
-    struct has_invocable_##method_name##sc##sv##sr##sn                      \
-        : ::utils::is_detected<                                             \
-              details::method_##method_name##sc##sv##sr##sn##_ptr_t, R, T,  \
-              Args...>                                                      \
+    template <typename T, typename... Args>                                 \
+    struct has_invocable_##method_name                                      \
+        : ::utils::is_detected<details::is_invocable_##method_name##_t, T,  \
+                               Args...>                                     \
     {                                                                       \
     };                                                                      \
                                                                             \
-    template <typename R, typename T, typename... Args>                     \
-    inline constexpr bool has_invocable_##method_name##sc##sv##sr##sn##_v = \
-        has_invocable_##method_name##sc##sv##sr##sn<R, T, Args...>::value;
-
-#define CREATE_METHOD_CHECKERS(method_name) SYMBOLIZED_QUALIFIERS(method_name)
+    template <typename T, typename... Args>                                 \
+    inline constexpr bool has_invocable_##method_name##_v =                 \
+        has_invocable_##method_name<T, Args...>::value;                     \
+                                                                            \
+    template <typename T, typename... Args>                                 \
+    struct has_invocable_##method_name##_noexcept                           \
+        : ::utils::is_detected_exact<                                       \
+              std::true_type,                                               \
+              details::is_invocable_##method_name##_noexcept_t, T, Args...> \
+    {                                                                       \
+    };                                                                      \
+                                                                            \
+    template <typename T, typename... Args>                                 \
+    inline constexpr bool has_invocable_##method_name##_noexcept_v =        \
+        has_invocable_##method_name##_noexcept<T, Args...>::value;
 
 #define S_IMPL(method_name, sn, n)                                             \
     namespace details                                                          \
