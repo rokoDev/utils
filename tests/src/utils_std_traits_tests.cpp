@@ -1,13 +1,49 @@
 #include <gtest/gtest.h>
 #include <utils/utils.h>
 
-#include <array>
-#include <set>
-#include <string>
 #include <tuple>
-#include <unordered_map>
-#include <valarray>
-#include <vector>
+
+TEST(StdTraits, IsStdContainer)
+{
+    static_assert(not utils::is_std_array_v<int>);
+    static_assert(not utils::is_std_valarray_v<int>);
+    static_assert(not utils::is_std_basic_string_v<int>);
+    static_assert(not utils::is_std_basic_string_view_v<int>);
+    static_assert(not utils::is_std_vector_v<int>);
+    static_assert(not utils::is_std_set_v<int>);
+    static_assert(not utils::is_std_multiset_v<int>);
+    static_assert(not utils::is_std_map_v<int>);
+    static_assert(not utils::is_std_multimap_v<int>);
+    static_assert(not utils::is_std_unordered_set_v<int>);
+    static_assert(not utils::is_std_unordered_multiset_v<int>);
+    static_assert(not utils::is_std_unordered_map_v<int>);
+    static_assert(not utils::is_std_unordered_multimap_v<int>);
+    static_assert(not utils::is_std_list_v<int>);
+    static_assert(not utils::is_std_forward_list_v<int>);
+    static_assert(not utils::is_std_deque_v<int>);
+    static_assert(not utils::is_std_queue_v<int>);
+
+    static_assert(utils::is_std_array_v<std::array<int, 10>>);
+    static_assert(utils::is_std_valarray_v<std::valarray<int>>);
+    static_assert(utils::is_std_basic_string_v<std::string>);
+    static_assert(utils::is_std_basic_string_view_v<std::string_view>);
+    static_assert(utils::is_std_vector_v<std::vector<float>>);
+    static_assert(utils::is_std_set_v<std::set<int>>);
+    static_assert(utils::is_std_multiset_v<std::multiset<int>>);
+    static_assert(utils::is_std_map_v<std::map<int, float>>);
+    static_assert(utils::is_std_multimap_v<std::multimap<int, float>>);
+    static_assert(utils::is_std_unordered_set_v<std::unordered_set<int>>);
+    static_assert(
+        utils::is_std_unordered_multiset_v<std::unordered_multiset<int>>);
+    static_assert(
+        utils::is_std_unordered_map_v<std::unordered_map<int, float>>);
+    static_assert(utils::is_std_unordered_multimap_v<
+                  std::unordered_multimap<int, float>>);
+    static_assert(utils::is_std_list_v<std::list<int>>);
+    static_assert(utils::is_std_forward_list_v<std::forward_list<int>>);
+    static_assert(utils::is_std_deque_v<std::deque<int>>);
+    static_assert(utils::is_std_queue_v<std::queue<int>>);
+}
 
 TEST(StlTraits, HasSize)
 {
