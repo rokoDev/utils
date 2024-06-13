@@ -217,10 +217,10 @@ package_add_test(
   )
 
 set(test_src
-  src/utils_stl_traits_tests.cpp
+  src/utils_std_traits_tests.cpp
   )
 package_add_test(
-  TEST_TARGET_NAME utils_stl_traits_tests
+  TEST_TARGET_NAME utils_std_traits_tests
   TEST_SOURCES ${test_src}
   EXTRA_TARGETS utils tests_main gmock
   )
