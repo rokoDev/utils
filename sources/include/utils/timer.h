@@ -9,17 +9,17 @@ namespace utils
 {
 namespace details
 {
-template <typename Clock>
+template <typename Clock, typename Timer>
 struct timer_impl
 {
     using clock = Clock;
     using time_point = std::chrono::time_point<clock>;
     using duration =
         decltype(std::declval<time_point>() - std::declval<time_point>());
-    using callback_ptr_t = void (*)(duration) noexcept;
-    using callback_ref_t = void (&)(duration) noexcept;
+    using callback_ptr_t = void (*)(const Timer &) noexcept;
+    using callback_ref_t = void (&)(const Timer &) noexcept;
 
-    using callback_t = void (*)(std::byte *, duration) noexcept;
+    using callback_t = void (*)(std::byte *, const Timer &) noexcept;
 
     template <typename Callable>
     struct storable
@@ -36,9 +36,9 @@ struct timer_impl
 
     template <typename FinishCallback>
     static void call_finish_callback(std::byte *aData,
-                                     duration aDuration) noexcept
+                                     const Timer &aTimer) noexcept
     {
-        callback<FinishCallback>(aData)(aDuration);
+        callback<FinishCallback>(aData)(aTimer);
     }
 
     template <typename T>
@@ -63,15 +63,12 @@ struct timer_impl
     }
 };
 
-template <std::size_t MaxCallbackAlignment =
-              alignof(timer_impl<std::chrono::steady_clock>::callback_ptr_t),
-          std::size_t MaxCallbackSize =
-              sizeof(timer_impl<std::chrono::steady_clock>::callback_ptr_t),
-          typename Clock = std::chrono::steady_clock>
+template <std::size_t MaxCallbackAlignment, std::size_t MaxCallbackSize,
+          typename Clock>
 class timer
 {
    private:
-    using impl = timer_impl<Clock>;
+    using impl = timer_impl<Clock, timer>;
 
    public:
     static constexpr auto kMaxCallbackAlignment = MaxCallbackAlignment;
@@ -84,7 +81,7 @@ class timer
     {
         if (callback_)
         {
-            std::invoke(callback_, data_, leaked());
+            std::invoke(callback_, data_, *this);
         }
     }
 
@@ -166,7 +163,8 @@ class timer
 };
 }  // namespace details
 
-using timer = details::timer<>;
+using timer = details::timer<alignof(void (*)(int &)), sizeof(void (*)(int &)),
+                             std::chrono::steady_clock>;
 }  // namespace utils
 
 #endif /* utils_timer_h */

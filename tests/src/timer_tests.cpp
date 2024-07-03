@@ -4,7 +4,7 @@
 
 using timer = utils::timer;
 
-void print_duration(timer::duration) noexcept {}
+void print_duration(const timer &) noexcept {}
 
 TEST(Timer, DefaultConstructor)
 {
@@ -51,6 +51,6 @@ TEST(Timer, ConstructWithFunctionPointer)
 
 TEST(Timer, ConstructWithFunctor)
 {
-    auto functor = [](timer::duration) noexcept {};
+    auto functor = [](const timer &) noexcept {};
     [[maybe_unused]] timer t(functor);
 }
