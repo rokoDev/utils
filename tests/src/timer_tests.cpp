@@ -2,7 +2,7 @@
 #include <type_name/type_name.h>
 #include <utils/timer.h>
 
-using timer = utils::timer<8, 8>;
+using timer = utils::timer;
 
 void print_duration(timer::duration) noexcept {}
 

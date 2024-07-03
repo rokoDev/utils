@@ -10,7 +10,7 @@ namespace utils
 namespace details
 {
 template <typename Clock>
-struct timer
+struct timer_impl
 {
     using clock = Clock;
     using time_point = std::chrono::time_point<clock>;
@@ -62,14 +62,16 @@ struct timer
         copy_impl(aDst, aSrc, std::make_index_sequence<Size>{});
     }
 };
-}  // namespace details
 
-template <std::size_t MaxCallbackAlignment, std::size_t MaxCallbackSize,
+template <std::size_t MaxCallbackAlignment =
+              alignof(timer_impl<std::chrono::steady_clock>::callback_ptr_t),
+          std::size_t MaxCallbackSize =
+              sizeof(timer_impl<std::chrono::steady_clock>::callback_ptr_t),
           typename Clock = std::chrono::steady_clock>
 class timer
 {
    private:
-    using impl = details::timer<Clock>;
+    using impl = timer_impl<Clock>;
 
    public:
     static constexpr auto kMaxCallbackAlignment = MaxCallbackAlignment;
@@ -162,6 +164,9 @@ class timer
     typename impl::callback_t callback_{};
     alignas(MaxCallbackAlignment) std::byte data_[MaxCallbackSize]{};
 };
+}  // namespace details
+
+using timer = details::timer<>;
 }  // namespace utils
 
 #endif /* utils_timer_h */
