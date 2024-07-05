@@ -843,6 +843,38 @@ constexpr void integral_to_bytes(std::byte* aDst, T&& aValue) noexcept
     using Indices = std::make_index_sequence<NBytes>;
     details::integral_to_bytes_impl(aDst, std::forward<T>(aValue), Indices{});
 }
+
+template <typename T>
+constexpr T bytes_to_integral(std::byte const* aSrc,
+                              std::size_t aNBytes) noexcept
+{
+    assert(aNBytes <= sizeof(T));
+    assert(aSrc);
+    T value{};
+    for (std::size_t i = 0; i < aNBytes; ++i)
+    {
+        value |= shift_left(std::to_integer<T>(*(aSrc + i)), i * CHAR_BIT);
+    }
+    return value;
+}
+
+template <typename T>
+constexpr void integral_to_bytes(std::byte* aDst, T&& aValue,
+                                 std::size_t aNBytes) noexcept
+{
+    using ValueT = remove_cvref_t<T>;
+    static_assert(
+        std::conjunction_v<std::is_integral<ValueT>,
+                           std::negation<std::is_same<ValueT, bool>>>);
+
+    assert(aNBytes <= sizeof(ValueT));
+    assert(aDst);
+
+    for (std::size_t i = 0; i < aNBytes; ++i)
+    {
+        *(aDst + i) = static_cast<std::byte>(aValue >> i * CHAR_BIT);
+    }
+}
 }  // namespace utils
 
 #endif /* utils_common_h */

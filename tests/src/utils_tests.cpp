@@ -617,80 +617,106 @@ TEST(UtilsTest, IsUintOrByte)
 
 TEST(UtilsTest, OneByteToIntegral)
 {
-    std::byte arr[sizeof(std::uint32_t)] = {
+    constexpr std::byte arr[sizeof(std::uint32_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}};
-    const auto value = utils::bytes_to_integral<1, std::uint32_t>(arr);
-    ASSERT_EQ(value, 0b10000001);
+    const auto val1 = utils::bytes_to_integral<1, std::uint32_t>(arr);
+    ASSERT_EQ(val1, 0b10000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint32_t>(arr, 1);
+    ASSERT_EQ(val2, 0b10000001);
 }
 
 TEST(UtilsTest, TwoBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint32_t)] = {
+    constexpr std::byte arr[sizeof(std::uint32_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}};
-    const auto value = utils::bytes_to_integral<2, std::uint32_t>(arr);
-    ASSERT_EQ(value, 0b0100001010000001);
+    const auto val1 = utils::bytes_to_integral<2, std::uint32_t>(arr);
+    ASSERT_EQ(val1, 0b0100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint32_t>(arr, 2);
+    ASSERT_EQ(val2, 0b0100001010000001);
 }
 
 TEST(UtilsTest, ThreeBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint32_t)] = {
+    constexpr std::byte arr[sizeof(std::uint32_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}};
-    const auto value = utils::bytes_to_integral<3, std::uint32_t>(arr);
-    ASSERT_EQ(value, 0b001001000100001010000001);
+    const auto val1 = utils::bytes_to_integral<3, std::uint32_t>(arr);
+    ASSERT_EQ(val1, 0b001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint32_t>(arr, 3);
+    ASSERT_EQ(val2, 0b001001000100001010000001);
 }
 
 TEST(UtilsTest, FourBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint32_t)] = {
+    constexpr std::byte arr[sizeof(std::uint32_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}};
-    const auto value = utils::bytes_to_integral<4, std::uint32_t>(arr);
-    ASSERT_EQ(value, 0b00011000001001000100001010000001);
+    const auto val1 = utils::bytes_to_integral<4, std::uint32_t>(arr);
+    ASSERT_EQ(val1, 0b00011000001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint32_t>(arr, 4);
+    ASSERT_EQ(val2, 0b00011000001001000100001010000001);
 }
 
 TEST(UtilsTest, FiveBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint64_t)] = {
+    constexpr std::byte arr[sizeof(std::uint64_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}, std::byte{0b11000011}, std::byte{0b01100110},
         std::byte{0b00111100}, std::byte{0b10011001}};
     const auto value = utils::bytes_to_integral<5, std::uint64_t>(arr);
     ASSERT_EQ(value, 0b1100001100011000001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint64_t>(arr, 5);
+    ASSERT_EQ(val2, 0b1100001100011000001001000100001010000001);
 }
 
 TEST(UtilsTest, SixBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint64_t)] = {
+    constexpr std::byte arr[sizeof(std::uint64_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}, std::byte{0b11000011}, std::byte{0b01100110},
         std::byte{0b00111100}, std::byte{0b10011001}};
     const auto value = utils::bytes_to_integral<6, std::uint64_t>(arr);
     ASSERT_EQ(value, 0b011001101100001100011000001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint64_t>(arr, 6);
+    ASSERT_EQ(val2, 0b011001101100001100011000001001000100001010000001);
 }
 
 TEST(UtilsTest, SevenBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint64_t)] = {
+    constexpr std::byte arr[sizeof(std::uint64_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}, std::byte{0b11000011}, std::byte{0b01100110},
         std::byte{0b00111100}, std::byte{0b10011001}};
     const auto value = utils::bytes_to_integral<7, std::uint64_t>(arr);
     ASSERT_EQ(value,
               0b00111100011001101100001100011000001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint64_t>(arr, 7);
+    ASSERT_EQ(val2, 0b00111100011001101100001100011000001001000100001010000001);
 }
 
 TEST(UtilsTest, EightBytesToIntegral)
 {
-    std::byte arr[sizeof(std::uint64_t)] = {
+    constexpr std::byte arr[sizeof(std::uint64_t)] = {
         std::byte{0b10000001}, std::byte{0b01000010}, std::byte{0b00100100},
         std::byte{0b00011000}, std::byte{0b11000011}, std::byte{0b01100110},
         std::byte{0b00111100}, std::byte{0b10011001}};
     const auto value = utils::bytes_to_integral<8, std::uint64_t>(arr);
     ASSERT_EQ(
         value,
+        0b1001100100111100011001101100001100011000001001000100001010000001);
+
+    constexpr auto val2 = utils::bytes_to_integral<std::uint64_t>(arr, 8);
+    ASSERT_EQ(
+        val2,
         0b1001100100111100011001101100001100011000001001000100001010000001);
 }
 
@@ -703,6 +729,13 @@ TEST(UtilsTest, IntegralToOneByte)
     ASSERT_EQ(arr[1], std::byte{0b00000000});
     ASSERT_EQ(arr[2], std::byte{0b00000000});
     ASSERT_EQ(arr[3], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint32_t)] = {};
+    utils::integral_to_bytes(arr2, value, 1);
+    ASSERT_EQ(arr2[0], std::byte{0b00011000});
+    ASSERT_EQ(arr2[1], std::byte{0b00000000});
+    ASSERT_EQ(arr2[2], std::byte{0b00000000});
+    ASSERT_EQ(arr2[3], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToTwoBytes)
@@ -714,6 +747,13 @@ TEST(UtilsTest, IntegralToTwoBytes)
     ASSERT_EQ(arr[1], std::byte{0b00100100});
     ASSERT_EQ(arr[2], std::byte{0b00000000});
     ASSERT_EQ(arr[3], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint32_t)] = {};
+    utils::integral_to_bytes(arr2, value, 2);
+    ASSERT_EQ(arr2[0], std::byte{0b00011000});
+    ASSERT_EQ(arr2[1], std::byte{0b00100100});
+    ASSERT_EQ(arr2[2], std::byte{0b00000000});
+    ASSERT_EQ(arr2[3], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToThreeBytes)
@@ -725,6 +765,13 @@ TEST(UtilsTest, IntegralToThreeBytes)
     ASSERT_EQ(arr[1], std::byte{0b00100100});
     ASSERT_EQ(arr[2], std::byte{0b01000010});
     ASSERT_EQ(arr[3], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint32_t)] = {};
+    utils::integral_to_bytes(arr2, value, 3);
+    ASSERT_EQ(arr2[0], std::byte{0b00011000});
+    ASSERT_EQ(arr2[1], std::byte{0b00100100});
+    ASSERT_EQ(arr2[2], std::byte{0b01000010});
+    ASSERT_EQ(arr2[3], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToFourBytes)
@@ -736,6 +783,13 @@ TEST(UtilsTest, IntegralToFourBytes)
     ASSERT_EQ(arr[1], std::byte{0b00100100});
     ASSERT_EQ(arr[2], std::byte{0b01000010});
     ASSERT_EQ(arr[3], std::byte{0b10000001});
+
+    std::byte arr2[sizeof(std::uint32_t)] = {};
+    utils::integral_to_bytes(arr2, value, 4);
+    ASSERT_EQ(arr2[0], std::byte{0b00011000});
+    ASSERT_EQ(arr2[1], std::byte{0b00100100});
+    ASSERT_EQ(arr2[2], std::byte{0b01000010});
+    ASSERT_EQ(arr2[3], std::byte{0b10000001});
 }
 
 TEST(UtilsTest, IntegralToFiveBytes)
@@ -752,6 +806,17 @@ TEST(UtilsTest, IntegralToFiveBytes)
     ASSERT_EQ(arr[5], std::byte{0b00000000});
     ASSERT_EQ(arr[6], std::byte{0b00000000});
     ASSERT_EQ(arr[7], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint64_t)] = {};
+    utils::integral_to_bytes(arr2, value, 5);
+    ASSERT_EQ(arr2[0], std::byte{0b10011001});
+    ASSERT_EQ(arr2[1], std::byte{0b00111100});
+    ASSERT_EQ(arr2[2], std::byte{0b01100110});
+    ASSERT_EQ(arr2[3], std::byte{0b11000011});
+    ASSERT_EQ(arr2[4], std::byte{0b00011000});
+    ASSERT_EQ(arr2[5], std::byte{0b00000000});
+    ASSERT_EQ(arr2[6], std::byte{0b00000000});
+    ASSERT_EQ(arr2[7], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToSixBytes)
@@ -768,6 +833,17 @@ TEST(UtilsTest, IntegralToSixBytes)
     ASSERT_EQ(arr[5], std::byte{0b00100100});
     ASSERT_EQ(arr[6], std::byte{0b00000000});
     ASSERT_EQ(arr[7], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint64_t)] = {};
+    utils::integral_to_bytes(arr2, value, 6);
+    ASSERT_EQ(arr2[0], std::byte{0b10011001});
+    ASSERT_EQ(arr2[1], std::byte{0b00111100});
+    ASSERT_EQ(arr2[2], std::byte{0b01100110});
+    ASSERT_EQ(arr2[3], std::byte{0b11000011});
+    ASSERT_EQ(arr2[4], std::byte{0b00011000});
+    ASSERT_EQ(arr2[5], std::byte{0b00100100});
+    ASSERT_EQ(arr2[6], std::byte{0b00000000});
+    ASSERT_EQ(arr2[7], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToSevenBytes)
@@ -784,6 +860,17 @@ TEST(UtilsTest, IntegralToSevenBytes)
     ASSERT_EQ(arr[5], std::byte{0b00100100});
     ASSERT_EQ(arr[6], std::byte{0b01000010});
     ASSERT_EQ(arr[7], std::byte{0b00000000});
+
+    std::byte arr2[sizeof(std::uint64_t)] = {};
+    utils::integral_to_bytes(arr2, value, 7);
+    ASSERT_EQ(arr2[0], std::byte{0b10011001});
+    ASSERT_EQ(arr2[1], std::byte{0b00111100});
+    ASSERT_EQ(arr2[2], std::byte{0b01100110});
+    ASSERT_EQ(arr2[3], std::byte{0b11000011});
+    ASSERT_EQ(arr2[4], std::byte{0b00011000});
+    ASSERT_EQ(arr2[5], std::byte{0b00100100});
+    ASSERT_EQ(arr2[6], std::byte{0b01000010});
+    ASSERT_EQ(arr2[7], std::byte{0b00000000});
 }
 
 TEST(UtilsTest, IntegralToEightBytes)
@@ -800,4 +887,15 @@ TEST(UtilsTest, IntegralToEightBytes)
     ASSERT_EQ(arr[5], std::byte{0b00100100});
     ASSERT_EQ(arr[6], std::byte{0b01000010});
     ASSERT_EQ(arr[7], std::byte{0b10000001});
+
+    std::byte arr2[sizeof(std::uint64_t)] = {};
+    utils::integral_to_bytes(arr2, value, 8);
+    ASSERT_EQ(arr2[0], std::byte{0b10011001});
+    ASSERT_EQ(arr2[1], std::byte{0b00111100});
+    ASSERT_EQ(arr2[2], std::byte{0b01100110});
+    ASSERT_EQ(arr2[3], std::byte{0b11000011});
+    ASSERT_EQ(arr2[4], std::byte{0b00011000});
+    ASSERT_EQ(arr2[5], std::byte{0b00100100});
+    ASSERT_EQ(arr2[6], std::byte{0b01000010});
+    ASSERT_EQ(arr2[7], std::byte{0b10000001});
 }
