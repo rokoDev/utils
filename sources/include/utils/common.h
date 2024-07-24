@@ -815,10 +815,7 @@ constexpr void integral_to_bytes_impl(std::byte* aDst, T&& aValue,
                                       std::index_sequence<I...>) noexcept
 {
     static_assert(sizeof...(I) <= sizeof(T));
-    ([](std::byte* aDestination, T& aVal) noexcept
-     { *(aDestination + I) = static_cast<std::byte>(aVal >> I * CHAR_BIT); }(
-         aDst, aValue),
-     ...);
+    (..., (*(aDst + I) = static_cast<std::byte>(aValue >> I * CHAR_BIT)));
 }
 }  // namespace details
 
