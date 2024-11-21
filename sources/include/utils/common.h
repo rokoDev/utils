@@ -54,6 +54,12 @@
 #error "UTILS_ABORT_IF already defined somewhere"
 #endif
 
+#ifdef NDEBUG
+#define UTILS_DEBUG_ABORT_IF(...)
+#else
+#define UTILS_DEBUG_ABORT_IF(...) UTILS_ABORT_IF(__VA_ARGS__)
+#endif
+
 namespace utils
 {
 template <typename T>

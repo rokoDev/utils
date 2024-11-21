@@ -416,6 +416,24 @@ TEST(UtilsDeathTest, AbortIfMacroWithCompoundMessage)
     ASSERT_DEATH({ UTILS_ABORT_IF(c, "abort message %d", 5); }, EXIT_MSG(m));
 }
 
+#define U_D_ABORT_IF(...) UTILS_DEBUG_ABORT_IF(__VA_ARGS__)
+TEST(UtilsDeathTest, DebugAbortIfMacroWithEmptyMessage)
+{
+    ASSERT_DEBUG_DEATH({ U_D_ABORT_IF(true); }, EXIT_MSG(""));
+}
+
+TEST(UtilsDeathTest, DebugAbortIfMacroWithMessage)
+{
+    ASSERT_DEBUG_DEATH({ U_D_ABORT_IF(true, "1"); }, EXIT_MSG("1"));
+}
+
+TEST(UtilsDeathTest, DebugAbortIfMacroWithCompoundMessage)
+{
+    constexpr auto msg = "d 1";
+    ASSERT_DEBUG_DEATH({ U_D_ABORT_IF(true, "d %d", 1); }, EXIT_MSG(msg));
+}
+#undef U_D_ABORT_IF
+
 TEST(UtilsIsUIntTest, Test1)
 {
     using utils::is_uint_v;
