@@ -558,6 +558,7 @@ constexpr std::size_t num_bits<bool>()
 template <typename T>
 struct div_t
 {
+    using value_type = T;
     T quot;
     T rem;
 };
@@ -567,8 +568,8 @@ div_t(const T&, const T&) -> div_t<std::enable_if_t<std::is_integral_v<T>, T>>;
 
 template <typename T, typename U>
 div_t(T, U) -> div_t<std::enable_if_t<
-    std::is_integral_v<decltype(std::declval<T>() / std::declval<U>())>,
-    decltype(std::declval<T>() / std::declval<U>())>>;
+    std::conjunction_v<std::is_integral<T>, std::is_integral<U>>,
+    std::common_type_t<T, U>>>;
 
 template <typename T, typename U>
 constexpr decltype(auto) div(T aNumerator, U aDenominator) noexcept
@@ -576,7 +577,36 @@ constexpr decltype(auto) div(T aNumerator, U aDenominator) noexcept
     assert(aDenominator != 0);
     static_assert(std::is_integral_v<T>);
     static_assert(std::is_integral_v<U>);
-    return div_t{aNumerator / aDenominator, aNumerator % aDenominator};
+    using type = std::common_type_t<remove_cvref_t<T>, remove_cvref_t<U>>;
+    if (__builtin_is_constant_evaluated())
+    {
+        return div_t<type>{static_cast<type>(static_cast<type>(aNumerator) /
+                                             static_cast<type>(aDenominator)),
+                           static_cast<type>(static_cast<type>(aNumerator) %
+                                             static_cast<type>(aDenominator))};
+    }
+    else
+    {
+        using types_with_builtin_impl = type_list<int, long, long long>;
+        using common_t = std::common_type_t<type, int, long, long long>;
+        using work_t =
+            std::conditional_t<types_with_builtin_impl::contains_v<common_t>,
+                               common_t, long long>;
+
+        const auto result = std::div(static_cast<work_t>(aNumerator),
+                                     static_cast<work_t>(aDenominator));
+        return div_t<type>{static_cast<type>(result.quot),
+                           static_cast<type>(result.rem)};
+    }
+}
+
+template <typename R, typename T, typename U>
+constexpr div_t<R> div_as(T aNumerator, U aDenominator) noexcept
+{
+    static_assert(std::is_integral_v<R>);
+    static_assert(std::is_integral_v<T>);
+    static_assert(std::is_integral_v<U>);
+    return div(static_cast<R>(aNumerator), static_cast<R>(aDenominator));
 }
 
 template <typename... Ts>

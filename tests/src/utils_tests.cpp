@@ -508,8 +508,51 @@ TEST(UtilsTest, DivChar)
     ValueT numerator{10};
     ValueT denominator{3};
     const auto [quot, rem] = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(quot), const int>);
-    static_assert(std::is_same_v<decltype(rem), const int>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(quot)>, ValueT>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(rem)>, ValueT>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivCharInt)
+{
+    using Numerator = char;
+    using Denominator = int;
+    Numerator numerator{10};
+    Denominator denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    using common_t = std::common_type_t<Numerator, Denominator>;
+    static_assert(
+        std::is_same_v<std::remove_const_t<decltype(quot)>, common_t>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(rem)>, common_t>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivSizeTInt1)
+{
+    using Numerator = std::size_t;
+    using Denominator = int;
+    using R = std::uint16_t;
+    Numerator numerator{10};
+    Denominator denominator{3};
+    const auto [quot, rem] = utils::div_as<R>(numerator, denominator);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(quot)>, R>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(rem)>, R>);
+    ASSERT_EQ(quot, 3);
+    ASSERT_EQ(rem, 1);
+}
+
+TEST(UtilsTest, DivSizeTInt2)
+{
+    using Numerator = std::size_t;
+    using Denominator = int;
+    using R = std::common_type_t<std::size_t, int>;
+    Numerator numerator{10};
+    Denominator denominator{3};
+    const auto [quot, rem] = utils::div(numerator, denominator);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(quot)>, R>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(rem)>, R>);
     ASSERT_EQ(quot, 3);
     ASSERT_EQ(rem, 1);
 }
@@ -553,7 +596,8 @@ TEST(UtilsTest, DivCharConstexpr)
     constexpr ValueT numerator{10};
     constexpr ValueT denominator{3};
     constexpr auto result = utils::div(numerator, denominator);
-    static_assert(std::is_same_v<decltype(result), const utils::div_t<int>>);
+    static_assert(std::is_same_v<std::remove_const_t<decltype(result)>,
+                                 utils::div_t<ValueT>>);
     ASSERT_EQ(result.quot, 3);
     ASSERT_EQ(result.rem, 1);
 }
