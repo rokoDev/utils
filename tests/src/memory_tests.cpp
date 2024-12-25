@@ -93,6 +93,41 @@ TEST(MemoryTests, SecureZeroMem)
     ASSERT_TRUE(isZeroBuf);
 }
 
+TEST(MemoryTests, SecureZeroMemSafeWithNullBuf)
+{
+    const auto result = utils::memory::secure_zero_memory_safe(nullptr, 0);
+    ASSERT_EQ(result, -1);
+}
+
+TEST(MemoryTests, SecureZeroMemSafeWithZeroSize)
+{
+    const std::size_t kBufSize = 16;
+    std::array<std::byte, kBufSize> buf;
+    for (auto& b: buf)
+    {
+        b = std::byte{10};
+    }
+    const auto result = utils::memory::secure_zero_memory_safe(buf.data(), 0);
+    ASSERT_EQ(result, -2);
+}
+
+TEST(MemoryTests, SecureZeroMemSafe)
+{
+    const std::size_t kBufSize = 256;
+    std::array<std::byte, kBufSize> buf;
+    for (auto& b: buf)
+    {
+        b = std::byte{10};
+    }
+    const auto result =
+        utils::memory::secure_zero_memory_safe(buf.data(), kBufSize);
+    ASSERT_EQ(result, 0);
+
+    bool isZeroBuf = is_zero_buf(buf);
+
+    ASSERT_TRUE(isZeroBuf);
+}
+
 TEST(MemoryTests, SecureZeroMemConstexpr)
 {
     constexpr auto buf = zero_memory<64>(std::byte{25});

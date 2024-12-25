@@ -45,11 +45,6 @@ inline void aligned_free(void *aPtr) noexcept
 inline constexpr void secure_zero_memory(std::byte *aPtr,
                                          std::size_t aSize) noexcept
 {
-    if (!aPtr || !aSize)
-    {
-        return;
-    }
-
     const auto handmade_zero_mem =
         [](std::byte *aBuf, std::size_t aBufSize) noexcept
     {
@@ -75,6 +70,23 @@ inline constexpr void secure_zero_memory(std::byte *aPtr,
 #endif
 #endif
     }
+}
+
+[[nodiscard]] inline constexpr int secure_zero_memory_safe(
+    std::byte *aPtr, std::size_t aSize) noexcept
+{
+    if (!aPtr)
+    {
+        return -1;
+    }
+
+    if (!aSize)
+    {
+        return -2;
+    }
+
+    secure_zero_memory(aPtr, aSize);
+    return 0;
 }
 
 constexpr std::byte *memmove(std::byte *aDst, const std::byte *aSrc,
