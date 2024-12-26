@@ -7,7 +7,10 @@
 
 namespace
 {
-using testing::TestParamInfo;
+using ::testing::AssertionFailure;
+using ::testing::AssertionResult;
+using ::testing::AssertionSuccess;
+using ::testing::TestParamInfo;
 using ::testing::ValuesIn;
 using utils::memory::get_alignment;
 static inline constexpr auto PointerValues =
@@ -169,4 +172,184 @@ TEST(MemoryTests, MemmoveConstexpr)
         std::byte{12}, std::byte{13}, std::byte{14}, std::byte{15}};
 
     ASSERT_EQ(buf, expected);
+}
+
+template <typename Dst, typename Src>
+AssertionResult AssertEqualBytes(const char* i_expr, const char* dst_expr,
+                                 const char* src_expr, std::size_t i, Dst dst,
+                                 Src src)
+{
+    if (dst == static_cast<Dst>(src))
+    {
+        return AssertionSuccess();
+    }
+    else
+    {
+        return AssertionFailure()
+               << "for " << i_expr << " = " << i << '\n'
+               << dst_expr << " = "
+               << std::bitset<CHAR_BIT>(std::to_integer<std::size_t>(dst))
+               << '\n'
+               << src_expr << " = "
+               << std::bitset<CHAR_BIT>(
+                      std::to_integer<std::size_t>(static_cast<Dst>(src)))
+               << "\nwhich means they are not equal.";
+    }
+}
+
+template <typename Dst, typename Src, std::size_t BufSize = 16>
+constexpr auto make_result() noexcept
+{
+    using dst_array_t = std::array<Dst, BufSize>;
+    using src_array_t = std::array<Src, BufSize>;
+    src_array_t src{};
+    for (std::size_t i = 0; i < BufSize; ++i)
+    {
+        src[i] = static_cast<Src>(i + 1);
+    }
+    dst_array_t dst{};
+
+    auto* dst_buf = dst.data();
+    const auto* src_buf = src.data();
+
+    utils::memory::memcpy(dst_buf, src_buf, BufSize);
+    return std::make_tuple(dst, src);
+};
+
+TEST(MemoryTests, MemcpyByteByte)
+{
+    const std::size_t kBufSize = 16;
+    std::byte src_buf[kBufSize]{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        src_buf[i] = static_cast<std::byte>(i + 1);
+    }
+
+    std::byte dst_buf[kBufSize]{};
+
+    utils::memory::memcpy(dst_buf, src_buf, kBufSize);
+
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i, dst_buf[i], src_buf[i]);
+    }
+}
+
+TEST(MemoryTests, MemcpyByteByteConstexpr)
+{
+    constexpr auto result = make_result<std::byte, std::byte>();
+    const auto& dst_buf = std::get<0>(result);
+    const auto& src_buf = std::get<1>(result);
+
+    for (std::size_t i = 0; i < dst_buf.size(); ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i, dst_buf[i], src_buf[i]);
+    }
+}
+
+TEST(MemoryTests, MemcpyByteChar)
+{
+    const std::size_t kBufSize = 16;
+    char src_buf[kBufSize]{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        src_buf[i] = static_cast<char>(i + 1);
+    }
+
+    std::byte dst_buf[kBufSize]{};
+
+    utils::memory::memcpy(dst_buf, src_buf, kBufSize);
+
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i, dst_buf[i],
+                            static_cast<std::byte>(src_buf[i]));
+    }
+}
+
+TEST(MemoryTests, MemcpyByteVoid)
+{
+    using dst_t = std::byte;
+    using src_t = void;
+    const std::size_t kBufSize = 16;
+    std::byte buf[kBufSize]{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        *(buf + i) = static_cast<std::byte>(i + 1);
+    }
+
+    src_t* src_buf = buf;
+    dst_t dst_buf[kBufSize]{};
+
+    utils::memory::memcpy(dst_buf, src_buf, kBufSize);
+
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i, dst_buf[i],
+                            *(static_cast<const std::byte*>(src_buf) + i));
+    }
+}
+
+TEST(MemoryTests, MemcpyVoidByte)
+{
+    using dst_t = void;
+    using src_t = std::byte;
+    const std::size_t kBufSize = 16;
+    std::byte src[kBufSize]{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        *(src + i) = static_cast<std::byte>(i + 1);
+    }
+
+    src_t* src_buf = src;
+
+    std::byte dst[kBufSize]{};
+    dst_t* dst_buf = dst;
+
+    utils::memory::memcpy(dst_buf, src_buf, kBufSize);
+
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i,
+                            *(static_cast<std::byte*>(dst_buf) + i),
+                            *(static_cast<const std::byte*>(src_buf) + i));
+    }
+}
+
+TEST(MemoryTests, MemcpyVoidVoid)
+{
+    using dst_t = void;
+    using src_t = void;
+    const std::size_t kBufSize = 16;
+    std::byte src[kBufSize]{};
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        *(src + i) = static_cast<std::byte>(i + 1);
+    }
+
+    src_t* src_buf = src;
+
+    std::byte dst[kBufSize]{};
+    dst_t* dst_buf = dst;
+
+    utils::memory::memcpy(dst_buf, src_buf, kBufSize);
+
+    for (std::size_t i = 0; i < kBufSize; ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i,
+                            *(static_cast<std::byte*>(dst_buf) + i),
+                            *(static_cast<const std::byte*>(src_buf) + i));
+    }
+}
+
+TEST(MemoryTests, MemcpyVoidVoidConstexpr)
+{
+    constexpr auto result = make_result<std::byte, unsigned char>();
+    const auto& dst_buf = std::get<0>(result);
+    const auto& src_buf = std::get<1>(result);
+
+    for (std::size_t i = 0; i < dst_buf.size(); ++i)
+    {
+        EXPECT_PRED_FORMAT3(AssertEqualBytes, i, dst_buf[i], src_buf[i]);
+    }
 }

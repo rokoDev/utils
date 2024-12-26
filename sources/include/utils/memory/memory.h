@@ -118,6 +118,42 @@ constexpr std::byte *memmove(std::byte *aDst, const std::byte *aSrc,
     return std::size_t{1} << power;
 }
 
+template <typename To, typename From>
+constexpr void memcpy(To *aTo, const From *aFrom, std::size_t aCount) noexcept
+{
+    assert(aTo);
+    assert(aFrom);
+    const std::size_t required_type_size = 1;
+    if constexpr (!std::is_same_v<To, void>)
+    {
+        static_assert(sizeof(To) == required_type_size);
+    }
+    if constexpr (!std::is_same_v<From, void>)
+    {
+        static_assert(sizeof(From) == required_type_size);
+    }
+
+    if (__builtin_is_constant_evaluated())
+    {
+        if constexpr (std::disjunction_v<std::is_same<To, void>,
+                                         std::is_same<From, void>>)
+        {
+            std::memcpy(aTo, aFrom, aCount);
+        }
+        else
+        {
+            for (std::size_t i = 0; i < aCount; ++i)
+            {
+                *(aTo + i) = static_cast<To>(*(aFrom + i));
+            }
+        }
+    }
+    else
+    {
+        std::memcpy(aTo, aFrom, aCount);
+    }
+}
+
 class memory_resource
 {
    protected:
