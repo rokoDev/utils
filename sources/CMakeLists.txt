@@ -15,6 +15,7 @@ target_sources(utils
     include/utils/memory/allocator.h
     include/utils/timer.h
     include/utils/fast_pimpl.h
+    include/utils/padding_checker.h
   )
 
 set_property(TARGET utils APPEND PROPERTY SRC_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
