@@ -380,17 +380,30 @@ inline constexpr bool is_power_of_2(std::size_t aValue) noexcept
     return aValue && ((aValue & (aValue - 1)) == 0);
 }
 
-[[maybe_unused]] static inline uintptr_t skip_to_align(
+inline constexpr std::uintptr_t next_multiple_of(std::uintptr_t aMultiple,
+                                                 std::uintptr_t aValue) noexcept
+{
+    assert(utils::is_power_of_2(aMultiple));
+    return (aValue + aMultiple - 1) & -aMultiple;
+}
+
+template <auto PowOf2, typename U>
+inline constexpr std::enable_if_t<utils::is_power_of_2(PowOf2), U>
+next_multiple_of(U aValue) noexcept
+{
+    return (aValue + static_cast<U>(PowOf2 - 1)) & -static_cast<U>(PowOf2);
+}
+
+[[maybe_unused]] static inline std::uintptr_t skip_to_align(
     void const* aPtr, const std::size_t aAlignment) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
-    const uintptr_t ptrAsUInt = reinterpret_cast<uintptr_t>(aPtr);
-    const uintptr_t alignedPtr = (ptrAsUInt + (aAlignment - 1)) & -aAlignment;
-    return alignedPtr - ptrAsUInt;
+    const std::uintptr_t ptrAsUInt = reinterpret_cast<std::uintptr_t>(aPtr);
+    return next_multiple_of(aAlignment, ptrAsUInt) - ptrAsUInt;
 }
 
 template <typename T>
-static uintptr_t skip_to_align(void const* aPtr) noexcept
+static std::uintptr_t skip_to_align(void const* aPtr) noexcept
 {
     constexpr auto kAlignment = alignof(T);
     static_assert(utils::is_power_of_2(kAlignment));
@@ -419,7 +432,7 @@ constexpr std::size_t max_alignment_inside_block(
 inline bool is_aligned(void const* aPtr, std::size_t aAlignment) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
-    return ((reinterpret_cast<uintptr_t>(aPtr) & (aAlignment - 1)) == 0);
+    return ((reinterpret_cast<std::uintptr_t>(aPtr) & (aAlignment - 1)) == 0);
 }
 
 template <typename T>

@@ -260,6 +260,42 @@ TEST(UtilsTest, SkipToAlignForInt64)
               5);
 }
 
+TEST(UtilsTest, NextMultipleOf8)
+{
+    static_assert(utils::next_multiple_of<CHAR_BIT>(0) == 0);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(1) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(2) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(3) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(4) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(5) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(6) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(7) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(8) == 8);
+    static_assert(utils::next_multiple_of<CHAR_BIT>(9) == 16);
+}
+
+TEST(UtilsTest, NextMultipleOf16)
+{
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(0) == 0);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(1) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(2) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(3) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(4) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(5) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(6) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(7) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(8) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(9) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(10) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(11) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(12) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(13) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(14) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(15) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(16) == 16);
+    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(17) == 32);
+}
+
 TEST(UtilsTest, IsRefWrapper)
 {
     static_assert(not utils::is_ref_wrapper_v<int>);
