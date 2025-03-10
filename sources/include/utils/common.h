@@ -232,7 +232,7 @@ constexpr auto make_array()
 }
 
 template <typename T, std::size_t N>
-constexpr auto make_array(T aValue)
+constexpr auto make_array(T aValue = {})
 {
     return details::make_array_with_value_impl<T>(
         aValue, std::make_index_sequence<N>{});

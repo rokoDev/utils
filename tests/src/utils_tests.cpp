@@ -103,6 +103,18 @@ TEST(UtilsTest, MakeArrayWithEqValues2)
     }
 }
 
+TEST(UtilsTest, MakeArrayWithEqValues3)
+{
+    using ElementT = std::uint8_t;
+    constexpr std::size_t kNumElements{5};
+
+    constexpr auto actual = utils::make_array<ElementT, kNumElements>();
+    constexpr std::array<ElementT, kNumElements> expected{};
+    static_assert(std::is_same_v<decltype(actual),
+                                 const std::array<ElementT, kNumElements>>);
+    ASSERT_EQ(actual, expected);
+}
+
 TEST(UtilsTest, MakeZeroArray)
 {
     using ElementT = std::uint16_t;
