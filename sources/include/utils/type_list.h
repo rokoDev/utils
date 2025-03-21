@@ -13,7 +13,7 @@ struct type_list;
 namespace details
 {
 template <typename... Ts>
-struct type_list
+struct type_list_impl
 {
     template <std::size_t Index, typename... U>
     struct at_impl;
@@ -214,7 +214,7 @@ template <typename... Ts>
 struct type_list
 {
    private:
-    using impl = details::type_list<Ts...>;
+    using impl = details::type_list_impl<Ts...>;
 
    public:
     static constexpr std::size_t size = sizeof...(Ts);
