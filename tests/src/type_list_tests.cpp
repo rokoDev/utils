@@ -514,53 +514,72 @@ TEST(UtilsTypeList, ListOfPredicateCompliant)
 
 TEST(UtilsTypeList, Concatenate)
 {
+    using utils::concatenate_t;
+    using utils::type_list;
+
     {
-        using list = utils::type_list<>;
-        using concatenate_result = utils::concatenate_t<list>;
+        using list = type_list<>;
+        using concatenate_result = concatenate_t<list>;
         static_assert(std::is_same_v<list, concatenate_result>,
                       "invalid result of concatenation");
     }
 
     {
-        using list = utils::type_list<int>;
-        using concatenate_result = utils::concatenate_t<list>;
+        using list = type_list<int>;
+        using concatenate_result = concatenate_t<list>;
         static_assert(std::is_same_v<list, concatenate_result>,
                       "invalid result of concatenation");
     }
 
     {
-        using list1 = utils::type_list<>;
-        using list2 = utils::type_list<>;
-        using concatenate_result = utils::concatenate_t<list1, list2>;
-        static_assert(std::is_same_v<utils::type_list<>, concatenate_result>,
+        using list1 = type_list<>;
+        using list2 = type_list<>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<type_list<>, concatenate_result>,
                       "invalid result of concatenation");
     }
 
     {
-        using list1 = utils::type_list<>;
-        using list2 = utils::type_list<int>;
-        using concatenate_result = utils::concatenate_t<list1, list2>;
-        static_assert(std::is_same_v<utils::type_list<int>, concatenate_result>,
+        using list1 = type_list<>;
+        using list2 = type_list<int>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<type_list<int>, concatenate_result>,
                       "invalid result of concatenation");
     }
 
     {
-        using list1 = utils::type_list<int>;
-        using list2 = utils::type_list<int>;
-        using concatenate_result = utils::concatenate_t<list1, list2>;
+        using list1 = type_list<int>;
+        using list2 = type_list<int>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<type_list<int, int>, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list1 = type_list<int, eReaderError, uint8_t>;
+        using list2 = type_list<eWriterError, eFileError, int16_t>;
+        using concatenate_result = concatenate_t<list1, list2>;
         static_assert(
-            std::is_same_v<utils::type_list<int, int>, concatenate_result>,
+            std::is_same_v<type_list<int, eReaderError, uint8_t, eWriterError,
+                                     eFileError, int16_t>,
+                           concatenate_result>,
             "invalid result of concatenation");
     }
 
     {
-        using list1 = utils::type_list<int, eReaderError, uint8_t>;
-        using list2 = utils::type_list<eWriterError, eFileError, int16_t>;
-        using concatenate_result = utils::concatenate_t<list1, list2>;
+        using sub_list1_1 = type_list<int, eReaderError, uint8_t>;
+        using sub_list1_2 = type_list<eWriterError, eFileError, int16_t>;
+        using list1 = type_list<sub_list1_1, sub_list1_2>;
+
+        using sub_list2_1 = type_list<double, int, char>;
+        using sub_list2_2 = type_list<float, eReaderError, std::size_t>;
+        using list2 = type_list<sub_list2_1, sub_list2_2>;
+
+        using concatenate_result = concatenate_t<list1, list2>;
         static_assert(
-            std::is_same_v<utils::type_list<int, eReaderError, uint8_t,
-                                            eWriterError, eFileError, int16_t>,
-                           concatenate_result>,
+            std::is_same_v<
+                type_list<sub_list1_1, sub_list1_2, sub_list2_1, sub_list2_2>,
+                concatenate_result>,
             "invalid result of concatenation");
     }
 }
