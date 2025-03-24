@@ -12,7 +12,7 @@ namespace utils
 namespace details
 {
 template <decltype(auto)... Values>
-struct value_list
+struct value_list_impl
 {
     template <typename U, typename V, U u, V v>
     struct is_same_impl_impl : std::false_type
@@ -133,7 +133,7 @@ template <decltype(auto)... Values>
 struct value_list
 {
    private:
-    using impl = details::value_list<Values...>;
+    using impl = details::value_list_impl<Values...>;
 
    public:
     static constexpr std::size_t size = sizeof...(Values);
