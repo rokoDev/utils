@@ -371,3 +371,76 @@ TEST(UtilsValueList, AllOfTypeT)
                                      utils::value_list<>>);
     }
 }
+
+TEST(UtilsValueList, Concatenate)
+{
+    using utils::concatenate_t;
+    using utils::value_list;
+
+    {
+        using list = value_list<>;
+        using concatenate_result = concatenate_t<list>;
+        static_assert(std::is_same_v<list, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list = value_list<111>;
+        using concatenate_result = concatenate_t<list>;
+        static_assert(std::is_same_v<list, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list1 = value_list<>;
+        using list2 = value_list<>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<value_list<>, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list1 = value_list<>;
+        using list2 = value_list<111>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<value_list<111>, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list1 = value_list<111>;
+        using list2 = value_list<222>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(std::is_same_v<value_list<111, 222>, concatenate_result>,
+                      "invalid result of concatenation");
+    }
+
+    {
+        using list1 = value_list<2, eReaderError::kError2, uint8_t{3}>;
+        using list2 = value_list<eWriterError::kError4,
+                                 eFileError::kAccessDenied, int16_t{}>;
+        using concatenate_result = concatenate_t<list1, list2>;
+        static_assert(
+            std::is_same_v<value_list<2, eReaderError::kError2, uint8_t{3},
+                                      eWriterError::kError4,
+                                      eFileError::kAccessDenied, int16_t{}>,
+                           concatenate_result>,
+            "invalid result of concatenation");
+    }
+
+    {
+        using list1 = value_list<111, eReaderError::kError2, uint8_t{3}>;
+        using list2 = value_list<eWriterError::kError4,
+                                 eFileError::kAccessDenied, int16_t{}>;
+        using list3 = value_list<'t', 333>;
+
+        using concatenate_result = concatenate_t<list1, list2, list3>;
+        static_assert(
+            std::is_same_v<
+                value_list<111, eReaderError::kError2, uint8_t{3},
+                           eWriterError::kError4, eFileError::kAccessDenied,
+                           int16_t{}, 't', 333>,
+                concatenate_result>,
+            "invalid result of concatenation");
+    }
+}
