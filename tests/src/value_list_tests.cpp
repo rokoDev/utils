@@ -380,39 +380,34 @@ TEST(UtilsValueList, Concatenate)
     {
         using list = value_list<>;
         using concatenate_result = concatenate_t<list>;
-        static_assert(std::is_same_v<list, concatenate_result>,
-                      "invalid result of concatenation");
+        static_assert(std::is_same_v<list, concatenate_result>);
     }
 
     {
         using list = value_list<111>;
         using concatenate_result = concatenate_t<list>;
-        static_assert(std::is_same_v<list, concatenate_result>,
-                      "invalid result of concatenation");
+        static_assert(std::is_same_v<list, concatenate_result>);
     }
 
     {
         using list1 = value_list<>;
         using list2 = value_list<>;
         using concatenate_result = concatenate_t<list1, list2>;
-        static_assert(std::is_same_v<value_list<>, concatenate_result>,
-                      "invalid result of concatenation");
+        static_assert(std::is_same_v<value_list<>, concatenate_result>);
     }
 
     {
         using list1 = value_list<>;
         using list2 = value_list<111>;
         using concatenate_result = concatenate_t<list1, list2>;
-        static_assert(std::is_same_v<value_list<111>, concatenate_result>,
-                      "invalid result of concatenation");
+        static_assert(std::is_same_v<value_list<111>, concatenate_result>);
     }
 
     {
         using list1 = value_list<111>;
         using list2 = value_list<222>;
         using concatenate_result = concatenate_t<list1, list2>;
-        static_assert(std::is_same_v<value_list<111, 222>, concatenate_result>,
-                      "invalid result of concatenation");
+        static_assert(std::is_same_v<value_list<111, 222>, concatenate_result>);
     }
 
     {
@@ -424,8 +419,7 @@ TEST(UtilsValueList, Concatenate)
             std::is_same_v<value_list<2, eReaderError::kError2, uint8_t{3},
                                       eWriterError::kError4,
                                       eFileError::kAccessDenied, int16_t{}>,
-                           concatenate_result>,
-            "invalid result of concatenation");
+                           concatenate_result>);
     }
 
     {
@@ -440,7 +434,63 @@ TEST(UtilsValueList, Concatenate)
                 value_list<111, eReaderError::kError2, uint8_t{3},
                            eWriterError::kError4, eFileError::kAccessDenied,
                            int16_t{}, 't', 333>,
-                concatenate_result>,
-            "invalid result of concatenation");
+                concatenate_result>);
+    }
+}
+
+TEST(UtilsValueList, CartesianProduct)
+{
+    using utils::cartesian_product_t;
+    using utils::type_list;
+    using utils::value_list;
+
+    {
+        using list1 = value_list<1>;
+        using list2 = value_list<4, 5>;
+        using expected = type_list<value_list<1, 4>, value_list<1, 5>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using list1 = value_list<1, 2, 3>;
+        using list2 = value_list<4, 5>;
+        using expected =
+            type_list<value_list<1, 4>, value_list<1, 5>, value_list<2, 4>,
+                      value_list<2, 5>, value_list<3, 4>, value_list<3, 5>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using list1 = value_list<1, 2, 3>;
+        using list2 = value_list<4, 5>;
+        using list3 = value_list<6, 7>;
+        using expected = type_list<
+            value_list<1, 4, 6>, value_list<1, 4, 7>, value_list<1, 5, 6>,
+            value_list<1, 5, 7>, value_list<2, 4, 6>, value_list<2, 4, 7>,
+            value_list<2, 5, 6>, value_list<2, 5, 7>, value_list<3, 4, 6>,
+            value_list<3, 4, 7>, value_list<3, 5, 6>, value_list<3, 5, 7>>;
+        using actual = cartesian_product_t<list1, list2, list3>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using list1 = value_list<1, 2, 3>;
+        using list2 = value_list<4, 5>;
+        using list3 = value_list<6>;
+        using expected = type_list<value_list<1, 4, 6>, value_list<1, 5, 6>,
+                                   value_list<2, 4, 6>, value_list<2, 5, 6>,
+                                   value_list<3, 4, 6>, value_list<3, 5, 6>>;
+        using actual = cartesian_product_t<list1, list2, list3>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using list1 = value_list<111>;
+        using list2 = value_list<222>;
+        using expected = type_list<value_list<111, 222>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
     }
 }

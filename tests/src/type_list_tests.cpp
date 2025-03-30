@@ -802,3 +802,91 @@ TEST(UtilsTypeList, SortSizeofDescending)
                 type_list<std::uint16_t, float, std::int16_t, bool, char>>,
             type_list<float, std::uint16_t, std::int16_t, bool, char>>);
 }
+
+TEST(UtilsTypeList, CartesianProduct)
+{
+    using utils::cartesian_product_t;
+    using utils::type_list;
+    using utils::value_list;
+
+    {
+        using T1 = char;
+        using T2 = int;
+        using T3 = float;
+
+        using list1 = type_list<T1>;
+        using list2 = type_list<T2, T3>;
+        using expected = type_list<type_list<T1, T2>, type_list<T1, T3>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using T1 = int;
+        using T2 = float;
+        using T3 = double;
+        using T4 = char;
+        using T5 = unsigned int;
+
+        using list1 = type_list<T1, T2, T3>;
+        using list2 = type_list<T4, T5>;
+        using expected =
+            type_list<type_list<T1, T4>, type_list<T1, T5>, type_list<T2, T4>,
+                      type_list<T2, T5>, type_list<T3, T4>, type_list<T3, T5>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using T1 = double;
+        using T2 = value_list<1, 2>;
+        using T3 = unsigned int;
+        using T4 = type_list<short, int>;
+        using T5 = float;
+        using T6 = int;
+        using T7 = char;
+
+        using list1 = type_list<T1, T2, T3>;
+        using list2 = type_list<T4, T5>;
+        using list3 = type_list<T6, T7>;
+        using expected =
+            type_list<type_list<T1, T4, T6>, type_list<T1, T4, T7>,
+                      type_list<T1, T5, T6>, type_list<T1, T5, T7>,
+                      type_list<T2, T4, T6>, type_list<T2, T4, T7>,
+                      type_list<T2, T5, T6>, type_list<T2, T5, T7>,
+                      type_list<T3, T4, T6>, type_list<T3, T4, T7>,
+                      type_list<T3, T5, T6>, type_list<T3, T5, T7>>;
+        using actual = cartesian_product_t<list1, list2, list3>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using T1 = double;
+        using T2 = char;
+        using T3 = unsigned int;
+        using T4 = short;
+        using T5 = float;
+        using T6 = int;
+
+        using list1 = type_list<T1, T2, T3>;
+        using list2 = type_list<T4, T5>;
+        using list3 = type_list<T6>;
+        using expected =
+            type_list<type_list<T1, T4, T6>, type_list<T1, T5, T6>,
+                      type_list<T2, T4, T6>, type_list<T2, T5, T6>,
+                      type_list<T3, T4, T6>, type_list<T3, T5, T6>>;
+        using actual = cartesian_product_t<list1, list2, list3>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
+        using T1 = int;
+        using T2 = char;
+
+        using list1 = type_list<T1>;
+        using list2 = type_list<T2>;
+        using expected = type_list<type_list<T1, T2>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+}
