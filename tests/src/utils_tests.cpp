@@ -28,6 +28,13 @@ TEST(UtilsTest, MakeArrayFromEmptyStringView)
     static_assert(std::is_same_v<decltype(arr), const std::array<char, 0>>);
 }
 
+TEST(UtilsTest, MakeArrayFromEmptyStringViewBrief)
+{
+    static constexpr std::string_view str = ""sv;
+    constexpr auto arr = utils::make_array<str>();
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 0>>);
+}
+
 TEST(UtilsTest, MakeArrayFromStringView1)
 {
     constexpr std::string_view str = "f"sv;
@@ -36,10 +43,33 @@ TEST(UtilsTest, MakeArrayFromStringView1)
     static_assert(arr[0] == 'f');
 }
 
+TEST(UtilsTest, MakeArrayFromStringView1Brief)
+{
+    static constexpr std::string_view str = "f"sv;
+    constexpr auto arr = utils::make_array<str>();
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 1>>);
+    static_assert(arr[0] == 'f');
+}
+
 TEST(UtilsTest, MakeArrayFromStringView2)
 {
     constexpr std::string_view str = "10101111"sv;
     constexpr auto arr = utils::make_array<str.size(), char>(str);
+    static_assert(std::is_same_v<decltype(arr), const std::array<char, 8>>);
+    static_assert(arr[0] == '1');
+    static_assert(arr[1] == '0');
+    static_assert(arr[2] == '1');
+    static_assert(arr[3] == '0');
+    static_assert(arr[4] == '1');
+    static_assert(arr[5] == '1');
+    static_assert(arr[6] == '1');
+    static_assert(arr[7] == '1');
+}
+
+TEST(UtilsTest, MakeArrayFromStringView2Brief)
+{
+    static constexpr std::string_view str = "10101111"sv;
+    constexpr auto arr = utils::make_array<str>();
     static_assert(std::is_same_v<decltype(arr), const std::array<char, 8>>);
     static_assert(arr[0] == '1');
     static_assert(arr[1] == '0');

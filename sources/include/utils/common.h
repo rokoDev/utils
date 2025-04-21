@@ -263,6 +263,12 @@ constexpr auto make_array(std::basic_string_view<CharT, Traits> aSV) noexcept
         aSV, std::make_index_sequence<N>{});
 }
 
+template <const std::string_view& Sv>
+constexpr auto make_array() noexcept
+{
+    return make_array<Sv.size(), std::string_view::value_type>(Sv);
+}
+
 template <auto Begin, auto End, auto Step = 1,
           typename CommonT =
               std::decay_t<std::common_type_t<decltype(Begin), decltype(End)>>>
