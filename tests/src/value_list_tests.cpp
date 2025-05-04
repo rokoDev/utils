@@ -453,6 +453,23 @@ TEST(UtilsValueList, CartesianProduct)
     }
 
     {
+        using namespace std::string_view_literals;
+        static constexpr const auto some_sv = "vfnslnjk"sv;
+        // compiler does not allow to use references. So we use pointers
+        // instead.
+        using ref_sv_t = std::string_view const *const;
+        static constexpr ref_sv_t ref_sv = &some_sv;
+
+        using list1 = value_list<1>;
+        using list2 = value_list<4, static_cast<ref_sv_t>(ref_sv)>;
+        using expected =
+            type_list<value_list<1, 4>,
+                      value_list<1, static_cast<ref_sv_t>(ref_sv)>>;
+        using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+
+    {
         using list1 = value_list<1, 2, 3>;
         using list2 = value_list<4, 5>;
         using expected =

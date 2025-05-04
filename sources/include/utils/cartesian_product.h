@@ -44,13 +44,13 @@ namespace details
 template <bool IsFirstPair, typename Set1, typename Set2>
 struct one_element_mult;
 
-template <auto Value, auto... Values>
+template <decltype(auto) Value, decltype(auto)... Values>
 struct one_element_mult<true, value_list<Value>, value_list<Values...>>
 {
     using type = type_list<value_list<Value, Values>...>;
 };
 
-template <auto Value, typename... Ts>
+template <decltype(auto) Value, typename... Ts>
 struct one_element_mult<false, value_list<Value>, type_list<Ts...>>
 {
     using type = type_list<concatenate_t<value_list<Value>, Ts>...>;
@@ -81,7 +81,7 @@ struct cartesian_product_impl<I, List1, List2, List3, Lists...>
                                         Lists...>::type>::type;
 };
 
-template <std::size_t I, auto... Values, typename List>
+template <std::size_t I, decltype(auto)... Values, typename List>
 struct cartesian_product_impl<I, value_list<Values...>, List>
 {
     using type = concatenate_t<
