@@ -251,6 +251,54 @@ struct type_list
 
 namespace details
 {
+template <typename ResultList, typename T, template <typename> typename Cond,
+          bool IsAppended = Cond<T>::value>
+struct append_type
+{
+    using type = ResultList;
+};
+
+template <typename... Processed, typename T, template <typename> typename Cond>
+struct append_type<::utils::type_list<Processed...>, T, Cond, true>
+{
+    using type = ::utils::type_list<Processed..., T>;
+};
+
+template <typename ResultList, typename T, template <typename> typename Cond>
+using append_type_t = typename append_type<ResultList, T, Cond>::type;
+
+template <typename ResultList, template <typename T> typename Cond,
+          typename UnprocessedList>
+struct select_types_impl;
+
+template <typename ResultList, template <typename T> typename Cond>
+struct select_types_impl<ResultList, Cond, ::utils::type_list<>>
+{
+    using type = ResultList;
+};
+
+template <typename ResultList, template <typename T> typename Cond, typename T,
+          typename... ToProcess>
+struct select_types_impl<ResultList, Cond, ::utils::type_list<T, ToProcess...>>
+{
+    using type =
+        typename select_types_impl<append_type_t<ResultList, T, Cond>, Cond,
+                                   ::utils::type_list<ToProcess...>>::type;
+};
+}  // namespace details
+
+template <typename TypeList, template <typename T> typename Cond>
+struct select_types
+{
+    using type =
+        typename details::select_types_impl<type_list<>, Cond, TypeList>::type;
+};
+
+template <typename TypeList, template <typename T> typename Cond>
+using select_types_t = typename select_types<TypeList, Cond>::type;
+
+namespace details
+{
 template <typename T, typename... Rest, std::size_t... I>
 constexpr std::size_t min_sizeof_index_impl(std::index_sequence<I...>) noexcept
 {

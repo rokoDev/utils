@@ -890,3 +890,54 @@ TEST(UtilsTypeList, CartesianProduct)
         static_assert(std::is_same_v<expected, actual>);
     }
 }
+
+template <typename T>
+struct is_not_integral : std::negation<std::is_integral<T>>
+{
+};
+
+TEST(UtilsTypeList, SelectTypes)
+{
+    using namespace utils;
+    using T1 = double;
+    using T2 = value_list<1, 2>;
+    using T3 = unsigned int;
+    using T4 = type_list<short, int>;
+    using T5 = int;
+    using T6 = float;
+    using T7 = int;
+    using T8 = void;
+    using T9 = char;
+
+    using misc_types = type_list<T1, T2, T3, T4, T5, T6, T7, T8, T9>;
+    {
+        using expected = type_list<T1, T6>;
+        using actual = select_types_t<misc_types, std::is_floating_point>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+    {
+        using expected = type_list<T3, T5, T7, T9>;
+        using actual = select_types_t<misc_types, std::is_integral>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+    {
+        using expected = type_list<T1, T2, T4, T6, T8>;
+        using actual = select_types_t<misc_types, is_not_integral>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+    {
+        using expected = type_list<>;
+        using actual = select_types_t<type_list<>, std::is_integral>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+    {
+        using expected = type_list<int>;
+        using actual = select_types_t<type_list<int>, std::is_integral>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+    {
+        using expected = type_list<>;
+        using actual = select_types_t<type_list<void>, std::is_integral>;
+        static_assert(std::is_same_v<actual, expected>);
+    }
+}

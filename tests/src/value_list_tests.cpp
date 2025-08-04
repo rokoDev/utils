@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <utils/common.h>
 #include <utils/value_list.h>
 
 enum class eReaderError : uint8_t
@@ -508,6 +509,57 @@ TEST(UtilsValueList, CartesianProduct)
         using list2 = value_list<222>;
         using expected = type_list<value_list<111, 222>>;
         using actual = cartesian_product_t<list1, list2>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+}
+
+template <decltype(auto) V>
+struct is_uint8 : std::is_same<decltype(V), std::uint8_t>
+{
+};
+
+auto is_uint8_less_than_3 = [](auto &&aV)
+{
+    if constexpr (std::is_same_v<utils::remove_cvref_t<decltype(aV)>,
+                                 std::uint8_t>)
+        return aV < 3;
+    return false;
+};
+
+template <decltype(auto) V>
+struct is_uint8_and_less_than_3
+    : std::bool_constant<is_uint8_less_than_3(std::forward<decltype(V)>(V))>
+{
+};
+
+TEST(UtilsValueList, SelectValues)
+{
+    using namespace utils;
+    using misc_values = value_list<111, eReaderError::kError2, std::uint8_t{3},
+                                   true, 'h', std::uint8_t{1}>;
+    {
+        using expected = value_list<std::uint8_t{3}, std::uint8_t{1}>;
+        using actual = select_values_t<misc_values, is_uint8>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+    {
+        using expected = value_list<std::uint8_t{1}>;
+        using actual = select_values_t<misc_values, is_uint8_and_less_than_3>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+    {
+        using expected = value_list<>;
+        using actual = select_values_t<value_list<>, is_uint8>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+    {
+        using expected = value_list<std::uint8_t{1}>;
+        using actual = select_values_t<value_list<std::uint8_t{1}>, is_uint8>;
+        static_assert(std::is_same_v<expected, actual>);
+    }
+    {
+        using expected = value_list<>;
+        using actual = select_values_t<value_list<true>, is_uint8>;
         static_assert(std::is_same_v<expected, actual>);
     }
 }

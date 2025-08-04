@@ -187,6 +187,60 @@ struct value_list
     using list_all_of_t = typename list_all_of<T>::type;
 };
 
+namespace details
+{
+template <decltype(auto) V, decltype(auto)... Processed>
+::utils::value_list<Processed..., V> append_value(
+    ::utils::value_list<Processed...>, std::true_type);
+
+template <decltype(auto) V, decltype(auto)... Processed>
+::utils::value_list<Processed...> append_value(
+    ::utils::value_list<Processed...>, std::false_type);
+
+template <typename ResultList, template <decltype(auto)> typename Cond,
+          decltype(auto) V>
+struct conditionaly_appended
+{
+    using type = decltype(append_value<V>(std::declval<ResultList>(),
+                                          std::declval<Cond<V>>()));
+};
+
+template <typename ResultList, template <decltype(auto)> typename Cond,
+          decltype(auto) V>
+using conditionaly_appended_t =
+    typename conditionaly_appended<ResultList, Cond, V>::type;
+
+template <typename ResultList, template <decltype(auto)> typename Cond,
+          typename UnprocessedList>
+struct select_values_impl;
+
+template <typename ResultList, template <decltype(auto)> typename Cond>
+struct select_values_impl<ResultList, Cond, ::utils::value_list<>>
+{
+    using type = ResultList;
+};
+
+template <typename ResultList, template <decltype(auto)> typename Cond,
+          decltype(auto) V, decltype(auto)... ToProcess>
+struct select_values_impl<ResultList, Cond,
+                          ::utils::value_list<V, ToProcess...>>
+{
+    using type = typename select_values_impl<
+        conditionaly_appended_t<ResultList, Cond, V>, Cond,
+        ::utils::value_list<ToProcess...>>::type;
+};
+}  // namespace details
+
+template <typename ValueList, template <decltype(auto)> typename Cond>
+struct select_values
+{
+    using type = typename details::select_values_impl<value_list<>, Cond,
+                                                      ValueList>::type;
+};
+
+template <typename ValueList, template <decltype(auto)> typename Cond>
+using select_values_t = typename select_values<ValueList, Cond>::type;
+
 template <typename T>
 struct is_value_list : std::false_type
 {
