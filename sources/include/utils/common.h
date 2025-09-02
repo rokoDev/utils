@@ -44,12 +44,23 @@
 #error "UTILS_FILE_LINE already defined somewhere"
 #endif
 
+#ifndef UTILS_ENABLE_IN_RUNTIME_CONTEXT
+#define UTILS_ENABLE_IN_RUNTIME_CONTEXT(...)   \
+    if (not __builtin_is_constant_evaluated()) \
+    {                                          \
+        __VA_ARGS__;                           \
+    }
+#else
+#error "UTILS_ENABLE_IN_RUNTIME_CONTEXT already defined somewhere"
+#endif
+
 #ifndef UTILS_ABORT_IF
 #define UTILS_ABORT_IF_HELPER(condition, format_str, ...)                \
     utils::abort_if(condition,                                           \
                     "[ERROR]\n" UTILS_FILE_LINE "\nfunc: %s" format_str, \
                     UTILS_FUNC, __VA_ARGS__)
-#define UTILS_ABORT_IF(...) UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", "")
+#define UTILS_ABORT_IF(...) \
+    UTILS_ENABLE_IN_RUNTIME_CONTEXT(UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", ""))
 #else
 #error "UTILS_ABORT_IF already defined somewhere"
 #endif
@@ -57,7 +68,8 @@
 #ifdef NDEBUG
 #define UTILS_DEBUG_ABORT_IF(...)
 #else
-#define UTILS_DEBUG_ABORT_IF(...) UTILS_ABORT_IF(__VA_ARGS__)
+#define UTILS_DEBUG_ABORT_IF(...) \
+    UTILS_ENABLE_IN_RUNTIME_CONTEXT(UTILS_ABORT_IF(__VA_ARGS__))
 #endif
 
 namespace utils
@@ -394,10 +406,50 @@ inline constexpr std::uintptr_t next_multiple_of(std::uintptr_t aMultiple,
 }
 
 template <auto PowOf2, typename U>
-inline constexpr std::enable_if_t<utils::is_power_of_2(PowOf2), U>
+inline constexpr std::enable_if_t<
+    utils::is_power_of_2(PowOf2) && std::is_unsigned_v<U>, U>
 next_multiple_of(U aValue) noexcept
 {
     return (aValue + static_cast<U>(PowOf2 - 1)) & -static_cast<U>(PowOf2);
+}
+
+template <auto PowOf2, typename U>
+inline constexpr auto chunk_count(U aValue) noexcept
+{
+    return next_multiple_of<PowOf2>(aValue) / PowOf2;
+}
+
+template <typename U>
+inline constexpr auto bytes_count(U aValue) noexcept
+{
+    return chunk_count<CHAR_BIT>(aValue);
+}
+
+template <auto PowOf2, typename P>
+std::enable_if_t<is_power_of_2(PowOf2), std::uintptr_t> byte_offset(
+    P const* const aPtr) noexcept
+{
+    return reinterpret_cast<uintptr_t>(aPtr) % PowOf2;
+}
+
+template <typename T, typename P>
+std::uintptr_t byte_offset(P const* const aPtr) noexcept
+{
+    return byte_offset<alignof(T)>(aPtr);
+}
+
+[[maybe_unused]] static inline constexpr std::uintptr_t skip_to_align(
+    std::uintptr_t aPtr, const std::size_t aAlignment) noexcept
+{
+    assert(utils::is_power_of_2(aAlignment));
+    return next_multiple_of(aAlignment, aPtr) - aPtr;
+}
+
+template <typename T>
+static constexpr std::uintptr_t skip_to_align(std::uintptr_t aPtr) noexcept
+{
+    static_assert(utils::is_power_of_2(alignof(T)));
+    return skip_to_align(aPtr, alignof(T));
 }
 
 [[maybe_unused]] static inline std::uintptr_t skip_to_align(
@@ -405,15 +457,14 @@ next_multiple_of(U aValue) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
     const std::uintptr_t ptrAsUInt = reinterpret_cast<std::uintptr_t>(aPtr);
-    return next_multiple_of(aAlignment, ptrAsUInt) - ptrAsUInt;
+    return skip_to_align(ptrAsUInt, aAlignment);
 }
 
 template <typename T>
 static std::uintptr_t skip_to_align(void const* aPtr) noexcept
 {
-    constexpr auto kAlignment = alignof(T);
-    static_assert(utils::is_power_of_2(kAlignment));
-    return skip_to_align(aPtr, kAlignment);
+    static_assert(utils::is_power_of_2(alignof(T)));
+    return skip_to_align(aPtr, alignof(T));
 }
 
 constexpr std::size_t max_alignment_inside_block(
@@ -465,7 +516,7 @@ inline bool is_aligned(void const* aPtr) noexcept
     }
 }
 
-template <uint8_t BitsCount>
+template <std::size_t BitsCount>
 struct uint_from_nbits
 {
    private:
@@ -503,10 +554,10 @@ struct uint_from_nbits
     using type = decltype(getType());
 };
 
-template <uint8_t BitsCount>
+template <std::size_t BitsCount>
 using uint_from_nbits_t = typename uint_from_nbits<BitsCount>::type;
 
-template <uint8_t BytesCount>
+template <std::size_t BytesCount>
 using uint_from_nbytes_t = uint_from_nbits_t<BytesCount * CHAR_BIT>;
 
 template <typename T>

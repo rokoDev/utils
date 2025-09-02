@@ -13,6 +13,12 @@ using namespace std::string_view_literals;
                UTILS_FUNC + x)
 }  // namespace
 
+constexpr int func_constexpr(int arg) noexcept
+{
+    UTILS_ABORT_IF(arg);
+    return arg + 5;
+}
+
 TEST(UtilsTest, MakeEmptyArray)
 {
     constexpr auto emptyArr = utils::make_array<std::uint8_t>();
@@ -230,112 +236,178 @@ TEST(UtilsTest, IsPowerOf2)
     }
 }
 
+TEST(UtilsTest, ChunkCount)
+{
+    using utils::chunk_count;
+    static_assert(chunk_count<CHAR_BIT>(0u) == 0);
+    static_assert(chunk_count<CHAR_BIT>(1u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(2u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(3u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(4u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(5u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(6u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(7u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(8u) == 1);
+    static_assert(chunk_count<CHAR_BIT>(9u) == 2);
+}
+
+TEST(UtilsTest, BytesCount)
+{
+    using utils::bytes_count;
+    static_assert(bytes_count(0u) == 0);
+    static_assert(bytes_count(1u) == 1);
+    static_assert(bytes_count(2u) == 1);
+    static_assert(bytes_count(3u) == 1);
+    static_assert(bytes_count(4u) == 1);
+    static_assert(bytes_count(5u) == 1);
+    static_assert(bytes_count(6u) == 1);
+    static_assert(bytes_count(7u) == 1);
+    static_assert(bytes_count(8u) == 1);
+    static_assert(bytes_count(9u) == 2);
+    static_assert(bytes_count(65u) == 9);
+}
+
+TEST(UtilsTest, ByteOffset)
+{
+    using utils::byte_offset;
+
+    using byte_p_t = std::byte *;
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(0u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(1u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(2u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(3u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(4u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(5u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(6u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(7u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(8u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(9u)), 0);
+    ASSERT_EQ(byte_offset<std::byte>(reinterpret_cast<byte_p_t>(65u)), 0);
+
+    using uint64_p_t = std::uint64_t *;
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(0u)), 0);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(1u)), 1);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(2u)), 2);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(3u)), 3);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(4u)), 4);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(5u)), 5);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(6u)), 6);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(7u)), 7);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(8u)), 0);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(9u)), 1);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(10u)), 2);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(65u)), 1);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(70u)), 6);
+    ASSERT_EQ(byte_offset<std::uint64_t>(reinterpret_cast<uint64_p_t>(71u)), 7);
+}
+
 TEST(UtilsTest, SkipToAlignForBool)
 {
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(0)), 0);
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(1)), 0);
-    ASSERT_EQ(utils::skip_to_align<bool>(reinterpret_cast<void *>(2)), 0);
+    using utils::skip_to_align;
+    ASSERT_EQ(skip_to_align<bool>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(skip_to_align<bool>(reinterpret_cast<void *>(1)), 0);
+    ASSERT_EQ(skip_to_align<bool>(reinterpret_cast<void *>(2)), 0);
 }
 
 TEST(UtilsTest, SkipToAlignForChar)
 {
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(0)), 0);
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(1)), 0);
-    ASSERT_EQ(utils::skip_to_align<char>(reinterpret_cast<void *>(2)), 0);
+    using utils::skip_to_align;
+    ASSERT_EQ(skip_to_align<char>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(skip_to_align<char>(reinterpret_cast<void *>(1)), 0);
+    ASSERT_EQ(skip_to_align<char>(reinterpret_cast<void *>(2)), 0);
 }
 
 TEST(UtilsTest, SkipToAlignForInt16)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(0)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(1)),
-              1);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(2)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(3)),
-              1);
-    ASSERT_EQ(utils::skip_to_align<std::int16_t>(reinterpret_cast<void *>(4)),
-              0);
+    using utils::skip_to_align;
+    ASSERT_EQ(skip_to_align<std::int16_t>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(skip_to_align<std::int16_t>(reinterpret_cast<void *>(1)), 1);
+    ASSERT_EQ(skip_to_align<std::int16_t>(reinterpret_cast<void *>(2)), 0);
+    ASSERT_EQ(skip_to_align<std::int16_t>(reinterpret_cast<void *>(3)), 1);
+    ASSERT_EQ(skip_to_align<std::int16_t>(reinterpret_cast<void *>(4)), 0);
 }
 
 TEST(UtilsTest, SkipToAlignForInt32)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(0)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(1)),
-              3);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(2)),
-              2);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(3)),
-              1);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(4)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int32_t>(reinterpret_cast<void *>(5)),
-              3);
+    using utils::skip_to_align;
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(1)), 3);
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(2)), 2);
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(3)), 1);
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(4)), 0);
+    ASSERT_EQ(skip_to_align<std::int32_t>(reinterpret_cast<void *>(5)), 3);
 }
 
 TEST(UtilsTest, SkipToAlignForInt64)
 {
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(0)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(1)),
-              7);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(2)),
-              6);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(3)),
-              5);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(4)),
-              4);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(5)),
-              3);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(6)),
-              2);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(7)),
-              1);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(8)),
-              0);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(9)),
-              7);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(10)),
-              6);
-    ASSERT_EQ(utils::skip_to_align<std::int64_t>(reinterpret_cast<void *>(11)),
-              5);
+    using utils::skip_to_align;
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(0)), 0);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(1)), 7);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(2)), 6);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(3)), 5);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(4)), 4);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(5)), 3);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(6)), 2);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(7)), 1);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(8)), 0);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(9)), 7);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(10)), 6);
+    ASSERT_EQ(skip_to_align<std::int64_t>(reinterpret_cast<void *>(11)), 5);
+}
+
+TEST(UtilsTest, SkipToAlignForInt64Constexpr)
+{
+    using utils::skip_to_align;
+    static_assert(skip_to_align<std::int64_t>(std::uintptr_t{}) == 0);
+    static_assert(skip_to_align<std::int64_t>(1) == 7);
+    static_assert(skip_to_align<std::int64_t>(2) == 6);
+    static_assert(skip_to_align<std::int64_t>(3) == 5);
+    static_assert(skip_to_align<std::int64_t>(4) == 4);
+    static_assert(skip_to_align<std::int64_t>(5) == 3);
+    static_assert(skip_to_align<std::int64_t>(6) == 2);
+    static_assert(skip_to_align<std::int64_t>(7) == 1);
+    static_assert(skip_to_align<std::int64_t>(8) == 0);
+    static_assert(skip_to_align<std::int64_t>(9) == 7);
+    static_assert(skip_to_align<std::int64_t>(10) == 6);
+    static_assert(skip_to_align<std::int64_t>(11) == 5);
 }
 
 TEST(UtilsTest, NextMultipleOf8)
 {
-    static_assert(utils::next_multiple_of<CHAR_BIT>(0) == 0);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(1) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(2) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(3) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(4) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(5) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(6) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(7) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(8) == 8);
-    static_assert(utils::next_multiple_of<CHAR_BIT>(9) == 16);
+    using utils::next_multiple_of;
+    static_assert(next_multiple_of<CHAR_BIT>(0u) == 0);
+    static_assert(next_multiple_of<CHAR_BIT>(1u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(2u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(3u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(4u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(5u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(6u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(7u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(8u) == 8);
+    static_assert(next_multiple_of<CHAR_BIT>(9u) == 16);
 }
 
 TEST(UtilsTest, NextMultipleOf16)
 {
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(0) == 0);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(1) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(2) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(3) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(4) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(5) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(6) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(7) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(8) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(9) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(10) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(11) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(12) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(13) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(14) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(15) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(16) == 16);
-    static_assert(utils::next_multiple_of<CHAR_BIT * 2>(17) == 32);
+    using utils::next_multiple_of;
+    static_assert(next_multiple_of<CHAR_BIT * 2>(0u) == 0);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(1u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(2u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(3u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(4u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(5u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(6u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(7u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(8u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(9u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(10u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(11u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(12u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(13u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(14u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(15u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(16u) == 16);
+    static_assert(next_multiple_of<CHAR_BIT * 2>(17u) == 32);
 }
 
 TEST(UtilsTest, IsRefWrapper)
@@ -479,6 +551,30 @@ TEST(UtilsDeathTest, AbortIfWithFalseConditionAndCompoundMessage)
 TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessage)
 {
     ASSERT_DEATH({ UTILS_ABORT_IF(true); }, EXIT_MSG(""));
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessageInRuntimeWentOff)
+{
+    int k = 10;
+    ASSERT_DEATH({ func_constexpr(k); }, "");
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessageInRuntimeWentOn)
+{
+    int k = 0;
+    ASSERT_EQ(func_constexpr(k), 5);
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessageInConstexprWentOn1)
+{
+    constexpr auto actual = func_constexpr(10);
+    ASSERT_EQ(actual, 15);
+}
+
+TEST(UtilsDeathTest, AbortIfMacroWithEmptyMessageInConstexprWentOn2)
+{
+    constexpr auto actual = func_constexpr(0);
+    ASSERT_EQ(actual, 5);
 }
 
 TEST(UtilsDeathTest, AbortIfMacroWithMessage)
