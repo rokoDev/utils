@@ -5,6 +5,7 @@
 
 namespace
 {
+using ::testing::EndsWith;
 using ::testing::StartsWith;
 using namespace std::string_view_literals;
 
@@ -588,6 +589,32 @@ TEST(UtilsDeathTest, AbortIfMacroWithCompoundMessage)
     const bool c = true;
     constexpr auto m = "abort message 5";
     ASSERT_DEATH({ UTILS_ABORT_IF(c, "abort message %d", 5); }, EXIT_MSG(m));
+}
+
+TEST(UtilsDeathTest, AbortIfReasonSimpleMsg)
+{
+    [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: valid")};
+    ASSERT_DEATH({ UTILS_ABORT_IF_REASON(true, "valid"); }, exit_validator);
+}
+
+TEST(UtilsDeathTest, AbortIfReasonFormatMsg)
+{
+    [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: v = 5")};
+    ASSERT_DEATH({ UTILS_ABORT_IF_REASON(true, "v = %d", 5); }, exit_validator);
+}
+
+TEST(UtilsDeathTest, DebugAbortIfReasonSimpleMsg)
+{
+    [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: valid")};
+    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ABORT_IF_REASON(true, "valid"); },
+                       exit_validator);
+}
+
+TEST(UtilsDeathTest, DebugAbortIfReasonFormatMsg)
+{
+    [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: v = 5")};
+    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ABORT_IF_REASON(true, "v = %d", 5); },
+                       exit_validator);
 }
 
 #define U_D_ABORT_IF(...) UTILS_DEBUG_ABORT_IF(__VA_ARGS__)

@@ -65,11 +65,23 @@
 #error "UTILS_ABORT_IF already defined somewhere"
 #endif
 
+#ifndef UTILS_ABORT_IF_REASON
+#define UTILS_ABORT_IF_REASON_HELPER(condition, reason_literal, reason_str, \
+                                     ...)                                   \
+    UTILS_ABORT_IF(condition, reason_literal reason_str, __VA_ARGS__)
+
+#define UTILS_ABORT_IF_REASON(condition, ...) \
+    UTILS_ABORT_IF_REASON_HELPER(condition, "\nreason: ", __VA_ARGS__, "")
+#else
+#error "UTILS_ABORT_IF_REASON already defined somewhere"
+#endif
+
 #ifdef NDEBUG
 #define UTILS_DEBUG_ABORT_IF(...)
+#define UTILS_DEBUG_ABORT_IF_REASON(...)
 #else
-#define UTILS_DEBUG_ABORT_IF(...) \
-    UTILS_ENABLE_IN_RUNTIME_CONTEXT(UTILS_ABORT_IF(__VA_ARGS__))
+#define UTILS_DEBUG_ABORT_IF(...) UTILS_ABORT_IF(__VA_ARGS__)
+#define UTILS_DEBUG_ABORT_IF_REASON(...) UTILS_ABORT_IF_REASON(__VA_ARGS__)
 #endif
 
 namespace utils
