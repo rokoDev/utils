@@ -10,6 +10,7 @@
 #include <cstring>
 #include <functional>
 #include <limits>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -386,7 +387,7 @@ constexpr uint8_t bits_count(const uint64_t aValue) noexcept
     return (aValue == 0) ? 0 : 1 + bits_count(aValue >> 1);
 }
 
-[[maybe_unused]] static bool memvcmp(const void* memptr, unsigned char val,
+[[maybe_unused]] inline bool memvcmp(const void* memptr, unsigned char val,
                                      const std::size_t size)
 {
     if ((0 == size) || (nullptr == memptr))
@@ -450,7 +451,7 @@ std::uintptr_t byte_offset(P const* const aPtr) noexcept
     return byte_offset<alignof(T)>(aPtr);
 }
 
-[[maybe_unused]] static inline constexpr std::uintptr_t skip_to_align(
+[[maybe_unused]] inline constexpr std::uintptr_t skip_to_align(
     std::uintptr_t aPtr, const std::size_t aAlignment) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
@@ -458,13 +459,13 @@ std::uintptr_t byte_offset(P const* const aPtr) noexcept
 }
 
 template <typename T>
-static constexpr std::uintptr_t skip_to_align(std::uintptr_t aPtr) noexcept
+constexpr std::uintptr_t skip_to_align(std::uintptr_t aPtr) noexcept
 {
     static_assert(utils::is_power_of_2(alignof(T)));
     return skip_to_align(aPtr, alignof(T));
 }
 
-[[maybe_unused]] static inline std::uintptr_t skip_to_align(
+[[maybe_unused]] inline std::uintptr_t skip_to_align(
     void const* aPtr, const std::size_t aAlignment) noexcept
 {
     assert(utils::is_power_of_2(aAlignment));
@@ -473,13 +474,13 @@ static constexpr std::uintptr_t skip_to_align(std::uintptr_t aPtr) noexcept
 }
 
 template <typename T>
-static std::uintptr_t skip_to_align(void const* aPtr) noexcept
+std::uintptr_t skip_to_align(void const* aPtr) noexcept
 {
     static_assert(utils::is_power_of_2(alignof(T)));
     return skip_to_align(aPtr, alignof(T));
 }
 
-constexpr std::size_t max_alignment_inside_block(
+inline constexpr std::size_t max_alignment_inside_block(
     std::size_t aBlockAlignment, std::size_t aBlockSize) noexcept
 {
     assert(is_power_of_2(aBlockAlignment));
@@ -511,7 +512,7 @@ inline bool is_aligned(void const* aPtr) noexcept
     return is_aligned(aPtr, type_alignment);
 }
 
-[[maybe_unused]] static void abort_if(const bool aCondition,
+[[maybe_unused]] inline void abort_if(const bool aCondition,
                                       char const* aFormat = nullptr,
                                       ...) noexcept
 {
@@ -526,6 +527,29 @@ inline bool is_aligned(void const* aPtr) noexcept
         }
         std::abort();
     }
+}
+
+inline std::string reason_msg(char const* aFormat, ...)
+{
+    assert(aFormat);
+    const auto fmt = std::string{"reason: "} + aFormat;
+    std::va_list args1;
+    va_start(args1, aFormat);
+    std::va_list args2;
+    va_copy(args2, args1);
+    const auto result_size = static_cast<std::string::size_type>(
+        vsnprintf(nullptr, 0, fmt.c_str(), args1));
+    va_end(args1);
+
+    std::string result(result_size, ' ');
+    if (const auto value =
+            vsnprintf(result.data(), result_size + 1, fmt.c_str(), args2) < 0)
+    {
+        UTILS_ABORT_IF_REASON(true, "vsnprintf returned negative value(%d)",
+                              value);
+    }
+    va_end(args2);
+    return result;
 }
 
 template <std::size_t BitsCount>
