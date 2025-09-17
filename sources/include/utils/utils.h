@@ -12,6 +12,7 @@
 #include "memory/monotonic_buffer_resource.h"
 #include "memory/simple_resource.h"
 #include "padding_checker.h"
+#include "rel_ops_checker.h"
 #include "timer.h"
 #include "type_list.h"
 #include "value_list.h"

@@ -17,6 +17,7 @@ target_sources(utils
     include/utils/fast_pimpl.h
     include/utils/padding_checker.h
     include/utils/cartesian_product.h
+    include/utils/rel_ops_checker.h
   )
 
 set_property(TARGET utils APPEND PROPERTY SRC_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")

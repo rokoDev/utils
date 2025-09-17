@@ -225,6 +225,15 @@ package_add_test(
   EXTRA_TARGETS utils tests_main gmock
   )
 
+set(test_src
+  src/rel_ops_checker_tests.cpp
+  )
+package_add_test(
+  TEST_TARGET_NAME utils_rel_ops_checker_tests
+  TEST_SOURCES ${test_src}
+  EXTRA_TARGETS utils tests_main gtest
+  )
+
 # If use IDE add gtest, gmock, gtest_main and gmock_main targets into deps/googletest group
 set_target_properties(gtest gmock gtest_main gmock_main PROPERTIES FOLDER tests/deps/googletest)
 set_target_properties(type_name user_literals PROPERTIES FOLDER tests/deps)
