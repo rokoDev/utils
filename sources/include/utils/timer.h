@@ -117,7 +117,7 @@ class timer
     timer(timer &&aOther) noexcept
         : start_(aOther.start_), callback_(aOther.callback_)
     {
-        impl::template copy(data_, aOther.data_);
+        impl::template copy<MaxCallbackSize>(data_, aOther.data_);
         aOther.callback_ = nullptr;
     }
     timer &operator=(const timer &) = delete;
@@ -126,7 +126,7 @@ class timer
         start_ = aOther.start_;
         callback_ = aOther.callback_;
         aOther.callback_ = nullptr;
-        impl::template copy(data_, aOther.data_);
+        impl::template copy<MaxCallbackSize>(data_, aOther.data_);
         return *this;
     }
 
