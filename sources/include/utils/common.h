@@ -801,36 +801,45 @@ struct shifted_sequence<std::integer_sequence<SeqT, I...>, N>
 template <typename Seq, auto N>
 using shifted_sequence_t = typename shifted_sequence<Seq, N>::type;
 
+namespace details
+{
+template <auto First, auto Last, auto Step, bool IsAscending>
+struct values_in_range_impl
+{
+    using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
+    template <auto... I>
+    static value_list<static_cast<SeqT>(First),
+                      static_cast<SeqT>(First +
+                                        static_cast<SeqT>(I + 1) * Step)...>
+        list(std::integer_sequence<std::size_t, I...>);
+    static constexpr auto step_count{(Last - First) / Step};
+
+    using type = decltype(list(
+        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
+};
+
+template <auto First, auto Last, auto Step>
+struct values_in_range_impl<First, Last, Step, false>
+{
+    using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
+    template <auto... I>
+    static value_list<static_cast<SeqT>(First),
+                      static_cast<SeqT>(First -
+                                        static_cast<SeqT>(I + 1) * Step)...>
+        list(std::integer_sequence<std::size_t, I...>);
+    static constexpr auto step_count{(First - Last) / Step};
+
+    using type = decltype(list(
+        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
+};
+}  // namespace details
+
 template <auto First, auto Last, auto Step = 1,
           typename = std::enable_if_t<(Step > 0)>>
 struct values_in_range
 {
-   private:
-    using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
-    template <bool IsAscendant>
-    struct result
-    {
-        template <auto... I>
-        static value_list<static_cast<SeqT>(First),
-                          static_cast<SeqT>(First +
-                                            static_cast<SeqT>(I + 1) * Step)...>
-            list(std::integer_sequence<std::size_t, I...>);
-    };
-    template <>
-    struct result<false>
-    {
-        template <auto... I>
-        static value_list<static_cast<SeqT>(First),
-                          static_cast<SeqT>(First -
-                                            static_cast<SeqT>(I + 1) * Step)...>
-            list(std::integer_sequence<std::size_t, I...>);
-    };
-    static constexpr auto step_count{(First <= Last) ? (Last - First) / Step
-                                                     : (First - Last) / Step};
-
-   public:
-    using type = decltype(result<First <= Last>::list(
-        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
+    using type = typename details::values_in_range_impl<First, Last, Step,
+                                                        First <= Last>::type;
 };
 
 template <auto First, auto Last, auto Step = 1,
