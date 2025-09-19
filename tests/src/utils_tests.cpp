@@ -617,6 +617,20 @@ TEST(UtilsDeathTest, DebugAbortIfReasonFormatMsg)
                        exit_validator);
 }
 
+TEST(UtilsDeathTest, AssertUnreachable)
+{
+    constexpr auto msg{"\nreason: this code should be unreachable"};
+    [[maybe_unused]] const auto exit_validator{EndsWith(msg)};
+    ASSERT_DEATH({ UTILS_ASSERT_UNREACHABLE; }, exit_validator);
+}
+
+TEST(UtilsDeathTest, DebugAssertUnreachable)
+{
+    constexpr auto msg{"\nreason: this code should be unreachable"};
+    [[maybe_unused]] const auto exit_validator{EndsWith(msg)};
+    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ASSERT_UNREACHABLE; }, exit_validator);
+}
+
 #define U_D_ABORT_IF(...) UTILS_DEBUG_ABORT_IF(__VA_ARGS__)
 TEST(UtilsDeathTest, DebugAbortIfMacroWithEmptyMessage)
 {

@@ -77,12 +77,21 @@
 #error "UTILS_ABORT_IF_REASON already defined somewhere"
 #endif
 
+#ifndef UTILS_ASSERT_UNREACHABLE
+#define UTILS_ASSERT_UNREACHABLE \
+    UTILS_ABORT_IF_REASON(true, "this code should be unreachable")
+#else
+#error "UTILS_ASSERT_UNREACHABLE already defined somewhere"
+#endif
+
 #ifdef NDEBUG
 #define UTILS_DEBUG_ABORT_IF(...)
 #define UTILS_DEBUG_ABORT_IF_REASON(...)
+#define UTILS_DEBUG_ASSERT_UNREACHABLE
 #else
 #define UTILS_DEBUG_ABORT_IF(...) UTILS_ABORT_IF(__VA_ARGS__)
 #define UTILS_DEBUG_ABORT_IF_REASON(...) UTILS_ABORT_IF_REASON(__VA_ARGS__)
+#define UTILS_DEBUG_ASSERT_UNREACHABLE UTILS_ASSERT_UNREACHABLE
 #endif
 
 namespace utils
