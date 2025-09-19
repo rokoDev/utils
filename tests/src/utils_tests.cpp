@@ -891,3 +891,33 @@ TEST(UtilsTest, IsUintOrByte)
     static_assert(not utils::is_uint_or_byte_v<float>);
     static_assert(not utils::is_uint_or_byte_v<int>);
 }
+
+TEST(UtilsTest, ValueSequence)
+{
+    using utils::value_list;
+    using utils::values_in_range_t;
+    static_assert(std::is_same_v<values_in_range_t<-10, -10>, value_list<-10>>);
+    static_assert(std::is_same_v<values_in_range_t<-1, -1>, value_list<-1>>);
+    static_assert(std::is_same_v<values_in_range_t<0, 0>, value_list<0>>);
+    static_assert(std::is_same_v<values_in_range_t<1, 1>, value_list<1>>);
+    static_assert(std::is_same_v<values_in_range_t<1, 10>,
+                                 value_list<1, 2, 3, 4, 5, 6, 7, 8, 9, 10>>);
+    static_assert(std::is_same_v<values_in_range_t<10, 1>,
+                                 value_list<10, 9, 8, 7, 6, 5, 4, 3, 2, 1>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<-10, -1>,
+                       value_list<-10, -9, -8, -7, -6, -5, -4, -3, -2, -1>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<-1, -10>,
+                       value_list<-1, -2, -3, -4, -5, -6, -7, -8, -9, -10>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<0, -3>, value_list<0, -1, -2, -3>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<1, 10, 2>, value_list<1, 3, 5, 7, 9>>);
+    static_assert(std::is_same_v<values_in_range_t<10, 1, 2>,
+                                 value_list<10, 8, 6, 4, 2>>);
+    static_assert(std::is_same_v<values_in_range_t<-10, -1, 2>,
+                                 value_list<-10, -8, -6, -4, -2>>);
+    static_assert(std::is_same_v<values_in_range_t<-1, -10, 2>,
+                                 value_list<-1, -3, -5, -7, -9>>);
+}

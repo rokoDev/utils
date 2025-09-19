@@ -801,25 +801,41 @@ struct shifted_sequence<std::integer_sequence<SeqT, I...>, N>
 template <typename Seq, auto N>
 using shifted_sequence_t = typename shifted_sequence<Seq, N>::type;
 
-template <auto First, auto Last, typename = std::enable_if_t<Last >= First>>
+template <auto First, auto Last, auto Step = 1,
+          typename = std::enable_if_t<(Step > 0)>>
 struct values_in_range
 {
    private:
     using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
-    using Indices = shifted_sequence_t<
-        std::make_integer_sequence<SeqT, static_cast<SeqT>(Last + 1 - First)>,
-        static_cast<SeqT>(First)>;
-
-    template <auto... I>
-    static value_list<I...> values_in_range_impl(
-        std::integer_sequence<SeqT, I...>) noexcept;
+    template <bool IsAscendant>
+    struct result
+    {
+        template <auto... I>
+        static value_list<static_cast<SeqT>(First),
+                          static_cast<SeqT>(First +
+                                            static_cast<SeqT>(I + 1) * Step)...>
+            list(std::integer_sequence<std::size_t, I...>);
+    };
+    template <>
+    struct result<false>
+    {
+        template <auto... I>
+        static value_list<static_cast<SeqT>(First),
+                          static_cast<SeqT>(First -
+                                            static_cast<SeqT>(I + 1) * Step)...>
+            list(std::integer_sequence<std::size_t, I...>);
+    };
+    static constexpr auto step_count{(First <= Last) ? (Last - First) / Step
+                                                     : (First - Last) / Step};
 
    public:
-    using type = decltype(values_in_range_impl(Indices{}));
+    using type = decltype(result<First <= Last>::list(
+        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
 };
 
-template <auto First, auto Last>
-using values_in_range_t = typename values_in_range<First, Last>::type;
+template <auto First, auto Last, auto Step = 1,
+          typename = std::enable_if_t<(Step > 0)>>
+using values_in_range_t = typename values_in_range<First, Last, Step>::type;
 
 template <typename... Ts>
 struct is_tuple : std::false_type
