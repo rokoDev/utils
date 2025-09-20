@@ -912,21 +912,24 @@ TEST(UtilsTest, ValueSequence)
                        value_list<-1, -2, -3, -4, -5, -6, -7, -8, -9, -10>>);
     static_assert(
         std::is_same_v<values_in_range_t<0, -3>, value_list<0, -1, -2, -3>>);
-    static_assert(
-        std::is_same_v<values_in_range_t<1, 10, 2>, value_list<1, 3, 5, 7, 9>>);
+    static_assert(std::is_same_v<values_in_range_t<1, 10, 2>,
+                                 value_list<1, 3, 5, 7, 9, 10>>);
     static_assert(std::is_same_v<values_in_range_t<10, 1, 2>,
-                                 value_list<10, 8, 6, 4, 2>>);
+                                 value_list<10, 8, 6, 4, 2, 1>>);
     static_assert(std::is_same_v<values_in_range_t<-10, -1, 2>,
-                                 value_list<-10, -8, -6, -4, -2>>);
+                                 value_list<-10, -8, -6, -4, -2, -1>>);
     static_assert(std::is_same_v<values_in_range_t<-1, -10, 2>,
-                                 value_list<-1, -3, -5, -7, -9>>);
-    static_assert(std::is_same_v<values_in_range_t<1, 10, 10>, value_list<1>>);
-    static_assert(std::is_same_v<values_in_range_t<1, 10, 11>, value_list<1>>);
+                                 value_list<-1, -3, -5, -7, -9, -10>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<1, 10, 10>, value_list<1, 10>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<1, 10, 11>, value_list<1, 10>>);
     static_assert(
         std::is_same_v<values_in_range_t<0, -3, 3>, value_list<0, -3>>);
-    static_assert(std::is_same_v<values_in_range_t<0, -3, 4>, value_list<0>>);
     static_assert(
-        std::is_same_v<values_in_range_t<-10, -1, 5>, value_list<-10, -5>>);
+        std::is_same_v<values_in_range_t<0, -3, 4>, value_list<0, -3>>);
     static_assert(
-        std::is_same_v<values_in_range_t<-10, -1, 15>, value_list<-10>>);
+        std::is_same_v<values_in_range_t<-10, -1, 5>, value_list<-10, -5, -1>>);
+    static_assert(
+        std::is_same_v<values_in_range_t<-10, -1, 15>, value_list<-10, -1>>);
 }

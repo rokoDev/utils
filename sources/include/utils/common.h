@@ -96,6 +96,17 @@
 
 namespace utils
 {
+
+template <typename T>
+struct is_integral_not_bool
+    : std::conjunction<std::is_integral<T>,
+                       std::negation<std::is_same<T, bool>>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_integral_not_bool_v = is_integral_not_bool<T>::value;
+
 template <typename T>
 struct is_uint
     : std::conjunction<std::is_unsigned<T>,
@@ -658,6 +669,23 @@ template <uint8_t BytesCount>
 using fast_uint_from_nbytes_t =
     typename fast_uint_from_nbits<BytesCount * CHAR_BIT>::type;
 
+template <typename T, typename = std::enable_if_t<is_integral_not_bool_v<T>>>
+constexpr decltype(auto) abs(T&& a_value) noexcept
+{
+    using In = remove_cvref_t<T>;
+    if constexpr (std::is_unsigned_v<In>)
+    {
+        return std::forward<T>(a_value);
+    }
+    else
+    {
+        const In mask = a_value >> (sizeof(In) * CHAR_BIT - 1);
+        using U = std::make_unsigned_t<In>;
+        U r = static_cast<U>((a_value + mask) ^ mask);
+        return r;
+    }
+}
+
 template <typename T>
 constexpr std::size_t num_bits()
 {
@@ -803,34 +831,38 @@ using shifted_sequence_t = typename shifted_sequence<Seq, N>::type;
 
 namespace details
 {
-template <auto First, auto Last, auto Step, bool IsAscending>
+template <auto First, auto Last, auto Step>
 struct values_in_range_impl
 {
     using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
-    template <auto... I>
+    template <auto SStep, auto... I>
     static value_list<static_cast<SeqT>(First),
                       static_cast<SeqT>(First +
-                                        static_cast<SeqT>(I + 1) * Step)...>
+                                        static_cast<SeqT>(I + 1) * SStep)...>
         list(std::integer_sequence<std::size_t, I...>);
-    static constexpr auto step_count{(Last - First) / Step};
+    static constexpr auto step_count{::utils::abs(Last - First) / Step};
+    static constexpr auto signed_step{(First <= Last) ? Step : -Step};
+    static constexpr bool has_last{static_cast<SeqT>(First) +
+                                       static_cast<SeqT>(step_count) *
+                                           signed_step ==
+                                   static_cast<SeqT>(Last)};
 
-    using type = decltype(list(
-        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
-};
+    template <bool HasLast, typename List, typename Fake = void>
+    struct append_last
+    {
+        using type = List;
+    };
 
-template <auto First, auto Last, auto Step>
-struct values_in_range_impl<First, Last, Step, false>
-{
-    using SeqT = std::common_type_t<decltype(First), decltype(Last)>;
-    template <auto... I>
-    static value_list<static_cast<SeqT>(First),
-                      static_cast<SeqT>(First -
-                                        static_cast<SeqT>(I + 1) * Step)...>
-        list(std::integer_sequence<std::size_t, I...>);
-    static constexpr auto step_count{(First - Last) / Step};
+    template <typename Fake, decltype(auto)... Vs>
+    struct append_last<false, value_list<Vs...>, Fake>
+    {
+        using type = value_list<Vs..., Last>;
+    };
 
-    using type = decltype(list(
-        std::make_index_sequence<static_cast<std::size_t>(step_count)>{}));
+    using type = typename append_last<
+        has_last, decltype(list<signed_step>(
+                      std::make_index_sequence<static_cast<std::size_t>(
+                          step_count)>{}))>::type;
 };
 }  // namespace details
 
@@ -838,8 +870,8 @@ template <auto First, auto Last, auto Step = 1,
           typename = std::enable_if_t<(Step > 0)>>
 struct values_in_range
 {
-    using type = typename details::values_in_range_impl<First, Last, Step,
-                                                        First <= Last>::type;
+    using type =
+        typename details::values_in_range_impl<First, Last, Step>::type;
 };
 
 template <auto First, auto Last, auto Step = 1,
