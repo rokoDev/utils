@@ -669,8 +669,9 @@ template <uint8_t BytesCount>
 using fast_uint_from_nbytes_t =
     typename fast_uint_from_nbits<BytesCount * CHAR_BIT>::type;
 
-template <typename T, typename = std::enable_if_t<is_integral_not_bool_v<T>>>
-constexpr decltype(auto) abs(T&& a_value) noexcept
+template <typename T, typename = std::enable_if_t<
+                          is_integral_not_bool_v<remove_cvref_t<T>>>>
+constexpr decltype(auto) abs_branchless(T&& a_value) noexcept
 {
     using In = remove_cvref_t<T>;
     if constexpr (std::is_unsigned_v<In>)
@@ -679,11 +680,92 @@ constexpr decltype(auto) abs(T&& a_value) noexcept
     }
     else
     {
-        const In mask = a_value >> (sizeof(In) * CHAR_BIT - 1);
         using U = std::make_unsigned_t<In>;
-        U r = static_cast<U>((a_value + mask) ^ mask);
+        const auto mask =
+            static_cast<U>(a_value >> (sizeof(In) * CHAR_BIT - 1));
+        U r = (static_cast<U>(a_value) + mask) ^ mask;
         return r;
     }
+}
+
+template <typename T>
+constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sum_overflow(
+    T a, T b) noexcept
+{
+    if (b > 0 && a > std::numeric_limits<T>::max() - b)
+    {
+        return true;  // Overflow will occur
+    }
+
+    if (b < 0 && a < std::numeric_limits<T>::min() - b)
+    {
+        return true;  // Underflow will occur
+    }
+
+    return false;  // No overflow
+}
+
+template <typename T>
+constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sub_overflow(
+    T a, T b) noexcept
+{
+    // Check for overflow
+    if (b > 0 && a < std::numeric_limits<T>::min() + b)
+    {
+        return true;  // Underflow will occur
+    }
+
+    if (b < 0 && a > std::numeric_limits<T>::max() + b)
+    {
+        return true;  // Overflow occurred
+    }
+
+    return false;  // No overflow
+}
+
+template <typename T>
+constexpr std::enable_if_t<is_integral_not_bool_v<T>, T> min_branchless(
+    T a_x, T a_y) noexcept
+{
+    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(a_x, a_y),
+                                "a_x(%d) - a_y(%d) will overflow", a_x, a_y);
+    using unsigned_t =
+        std::conditional_t<std::is_signed_v<T>, std::make_unsigned_t<T>, T>;
+    using signed_t = std::make_signed_t<unsigned_t>;
+
+    static_assert(std::is_unsigned_v<unsigned_t>);
+
+    const auto xy_diff{static_cast<unsigned_t>(a_x) -
+                       static_cast<unsigned_t>(a_y)};
+    constexpr auto shift{std::numeric_limits<signed_t>::digits};
+    const unsigned_t shifted{
+        static_cast<unsigned_t>(static_cast<signed_t>(xy_diff) >> shift)};
+    const auto r =
+        static_cast<T>(static_cast<unsigned_t>(a_y) + (xy_diff & shifted));
+    return r;
+}
+
+template <typename T>
+constexpr std::enable_if_t<is_integral_not_bool_v<T>, T> max_branchless(
+    T a_x, T a_y) noexcept
+{
+    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(a_x, a_y),
+                                "a_x(%d) - a_y(%d) will overflow", a_x, a_y);
+    using unsigned_t =
+        std::conditional_t<std::is_signed_v<T>, std::make_unsigned_t<T>, T>;
+    using signed_t = std::make_signed_t<unsigned_t>;
+
+    static_assert(std::is_unsigned_v<unsigned_t>);
+
+    const auto xy_diff{static_cast<unsigned_t>(a_x) -
+                       static_cast<unsigned_t>(a_y)};
+    constexpr auto shift{std::numeric_limits<signed_t>::digits};
+    const unsigned_t shifted{
+        static_cast<unsigned_t>(static_cast<signed_t>(xy_diff) >> shift)};
+
+    const auto r =
+        static_cast<T>(static_cast<unsigned_t>(a_x) - (xy_diff & shifted));
+    return r;
 }
 
 template <typename T>
@@ -840,7 +922,8 @@ struct values_in_range_impl
                       static_cast<SeqT>(First +
                                         static_cast<SeqT>(I + 1) * SStep)...>
         list(std::integer_sequence<std::size_t, I...>);
-    static constexpr auto step_count{::utils::abs(Last - First) / Step};
+    static constexpr auto step_count{::utils::abs_branchless(Last - First) /
+                                     Step};
     static constexpr auto signed_step{(First <= Last) ? Step : -Step};
     static constexpr bool has_last{static_cast<SeqT>(First) +
                                        static_cast<SeqT>(step_count) *
