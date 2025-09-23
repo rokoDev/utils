@@ -940,24 +940,24 @@ TEST(UtilsTest, AbsBranchless)
 {
     using utils::abs_branchless;
     using utils::remove_cvref_t;
+    using int_limits = std::numeric_limits<int>;
+    using uint_limits = std::numeric_limits<unsigned int>;
+    using char_limits = std::numeric_limits<std::int8_t>;
+    using uchar_limits = std::numeric_limits<std::uint8_t>;
+
     static_assert(abs_branchless(0) == 0);
     static_assert(abs_branchless(1) == 1);
     static_assert(abs_branchless(-1) == 1);
     static_assert(abs_branchless(-111) == 111);
 
-    using uint_limits = std::numeric_limits<unsigned int>;
     static_assert(abs_branchless(uint_limits::max()) == uint_limits::max());
     static_assert(abs_branchless(uint_limits::min()) == uint_limits::min());
 
-    using int_limits = std::numeric_limits<int>;
     static_assert(std::is_same_v<decltype(abs_branchless(int_limits::min())),
                                  unsigned int>);
     static_assert(abs_branchless(int_limits::min()) ==
                   uint_limits::max() - int_limits::max());
     static_assert(abs_branchless(int_limits::max()) == int_limits::max());
-
-    using char_limits = std::numeric_limits<std::int8_t>;
-    using uchar_limits = std::numeric_limits<std::uint8_t>;
 
     static_assert(std::is_same_v<decltype(abs_branchless(char_limits::min())),
                                  std::uint8_t>);
@@ -982,6 +982,9 @@ TEST(UtilsTest, AbsBranchless)
 TEST(UtilsTest, WillSubOverflow)
 {
     using utils::will_sub_overflow;
+    using int_limits = std::numeric_limits<int>;
+    using uint_limits = std::numeric_limits<unsigned int>;
+
     static_assert(not will_sub_overflow(0, 0));
     static_assert(not will_sub_overflow(0, 1));
     static_assert(not will_sub_overflow(1, 0));
@@ -992,7 +995,6 @@ TEST(UtilsTest, WillSubOverflow)
     static_assert(will_sub_overflow(1u, 100u));
     static_assert(not will_sub_overflow(1000u, 100u));
 
-    using uint_limits = std::numeric_limits<unsigned int>;
     static_assert(
         not will_sub_overflow(uint_limits::min(), uint_limits::min()));
     static_assert(
@@ -1001,7 +1003,6 @@ TEST(UtilsTest, WillSubOverflow)
     static_assert(
         not will_sub_overflow(uint_limits::max(), uint_limits::min()));
 
-    using int_limits = std::numeric_limits<int>;
     static_assert(not will_sub_overflow(int_limits::min(), int_limits::min()));
     static_assert(not will_sub_overflow(int_limits::max(), int_limits::max()));
     static_assert(will_sub_overflow(int_limits::min(), int_limits::max()));
@@ -1011,6 +1012,9 @@ TEST(UtilsTest, WillSubOverflow)
 TEST(UtilsTest, WillSumOverflow)
 {
     using utils::will_sum_overflow;
+    using uint_limits = std::numeric_limits<unsigned int>;
+    using int_limits = std::numeric_limits<int>;
+
     static_assert(not will_sum_overflow(0, 0));
     static_assert(not will_sum_overflow(0, 1));
     static_assert(not will_sum_overflow(1, 0));
@@ -1021,7 +1025,6 @@ TEST(UtilsTest, WillSumOverflow)
     static_assert(not will_sum_overflow(1u, 100u));
     static_assert(not will_sum_overflow(1000u, 100u));
 
-    using uint_limits = std::numeric_limits<unsigned int>;
     static_assert(
         not will_sum_overflow(uint_limits::min(), uint_limits::min()));
     static_assert(will_sum_overflow(uint_limits::max(), uint_limits::max()));
@@ -1030,7 +1033,6 @@ TEST(UtilsTest, WillSumOverflow)
     static_assert(
         not will_sum_overflow(uint_limits::max(), uint_limits::min()));
 
-    using int_limits = std::numeric_limits<int>;
     static_assert(will_sum_overflow(int_limits::min(), int_limits::min()));
     static_assert(will_sum_overflow(int_limits::max(), int_limits::max()));
     static_assert(not will_sum_overflow(int_limits::min(), int_limits::max()));
@@ -1040,6 +1042,8 @@ TEST(UtilsTest, WillSumOverflow)
 TEST(UtilsTest, MinBranchless)
 {
     using utils::min_branchless;
+    using uint_limits = std::numeric_limits<unsigned int>;
+
     static_assert(min_branchless(0, 0) == 0);
     static_assert(min_branchless(0, 1) == 0);
     static_assert(min_branchless(1, 0) == 0);
@@ -1047,29 +1051,29 @@ TEST(UtilsTest, MinBranchless)
     static_assert(min_branchless(-1, 1) == -1);
     static_assert(min_branchless(-100, 1) == -100);
     static_assert(min_branchless(1u, 100u) == 1);
+    static_assert(min_branchless(1ull, 10ull) == 1ull);
+    static_assert(min_branchless(10ull, 1ull) == 1ull);
 
-    using u_char_limits = std::numeric_limits<unsigned int>;
-    static_assert(min_branchless(u_char_limits::max(), u_char_limits::max()) ==
-                  u_char_limits::max());
-    static_assert(
-        min_branchless(u_char_limits::max() - 10, u_char_limits::max()) ==
-        u_char_limits::max() - 10);
-    static_assert(min_branchless(u_char_limits::min(), u_char_limits::min()) ==
-                  u_char_limits::min());
-    static_assert(
-        min_branchless(u_char_limits::min(), u_char_limits::min() + 10) ==
-        u_char_limits::min());
+    static_assert(min_branchless(uint_limits::max(), uint_limits::max()) ==
+                  uint_limits::max());
+    static_assert(min_branchless(uint_limits::min(), uint_limits::max()) ==
+                  uint_limits::min());
+    static_assert(min_branchless(uint_limits::max() - 10, uint_limits::max()) ==
+                  uint_limits::max() - 10);
+    static_assert(min_branchless(uint_limits::min(), uint_limits::min()) ==
+                  uint_limits::min());
+    static_assert(min_branchless(uint_limits::min(), uint_limits::min() + 10) ==
+                  uint_limits::min());
 }
 
 TEST(UtilsTest, MinBranchlessDeath)
 {
     using utils::min_branchless;
 
-    const auto expected_exit_msg = [](auto &&a_x, auto &&a_y)
+    const auto expected_exit_msg = [](auto &&x, auto &&y)
     {
         using utils::reason_msg;
-        return EndsWith(
-            reason_msg("a_x(%d) - a_y(%d) will overflow", a_x, a_y));
+        return EndsWith(reason_msg("x(%d) - y(%d) will overflow", x, y));
     };
 
     {
@@ -1093,12 +1097,6 @@ TEST(UtilsTest, MinBranchlessDeath)
     {
         constexpr auto x{std::numeric_limits<int>::max()};
         constexpr auto y{std::numeric_limits<int>::min()};
-        ASSERT_DEBUG_DEATH({ min_branchless(x, y); }, expected_exit_msg(x, y));
-    }
-
-    {
-        constexpr auto x{std::numeric_limits<unsigned int>::min()};
-        constexpr auto y{std::numeric_limits<unsigned int>::max()};
         ASSERT_DEBUG_DEATH({ min_branchless(x, y); }, expected_exit_msg(x, y));
     }
 }
@@ -1106,6 +1104,8 @@ TEST(UtilsTest, MinBranchlessDeath)
 TEST(UtilsTest, MaxBranchless)
 {
     using utils::max_branchless;
+    using uint_limits = std::numeric_limits<unsigned int>;
+
     static_assert(max_branchless(0, 0) == 0);
     static_assert(max_branchless(0, 1) == 1);
     static_assert(max_branchless(1, 0) == 1);
@@ -1113,28 +1113,29 @@ TEST(UtilsTest, MaxBranchless)
     static_assert(max_branchless(-1, 1) == 1);
     static_assert(max_branchless(-100, 1) == 1);
     static_assert(max_branchless(1u, 100u) == 100u);
+    static_assert(max_branchless(1ull, 10ull) == 10ull);
+    static_assert(max_branchless(10ull, 1ull) == 10ull);
 
-    using u_char_limits = std::numeric_limits<unsigned int>;
-    static_assert(max_branchless(u_char_limits::max(), u_char_limits::max()) ==
-                  u_char_limits::max());
-    static_assert(max_branchless(u_char_limits::max() - 10,
-                                 u_char_limits::max()) == u_char_limits::max());
-    static_assert(max_branchless(u_char_limits::min(), u_char_limits::min()) ==
-                  u_char_limits::min());
-    static_assert(
-        max_branchless(u_char_limits::min() + 10, u_char_limits::min()) ==
-        u_char_limits::min() + 10);
+    static_assert(max_branchless(uint_limits::max(), uint_limits::max()) ==
+                  uint_limits::max());
+    static_assert(max_branchless(uint_limits::min(), uint_limits::max()) ==
+                  uint_limits::max());
+    static_assert(max_branchless(uint_limits::max() - 10, uint_limits::max()) ==
+                  uint_limits::max());
+    static_assert(max_branchless(uint_limits::min(), uint_limits::min()) ==
+                  uint_limits::min());
+    static_assert(max_branchless(uint_limits::min() + 10, uint_limits::min()) ==
+                  uint_limits::min() + 10);
 }
 
 TEST(UtilsTest, MaxBranchlessDeath)
 {
     using utils::max_branchless;
 
-    const auto expected_exit_msg = [](auto &&a_x, auto &&a_y)
+    const auto expected_exit_msg = [](auto &&x, auto &&y)
     {
         using utils::reason_msg;
-        return EndsWith(
-            reason_msg("a_x(%d) - a_y(%d) will overflow", a_x, a_y));
+        return EndsWith(reason_msg("x(%d) - y(%d) will overflow", x, y));
     };
 
     {
@@ -1158,12 +1159,6 @@ TEST(UtilsTest, MaxBranchlessDeath)
     {
         constexpr auto x{std::numeric_limits<int>::max()};
         constexpr auto y{std::numeric_limits<int>::min()};
-        ASSERT_DEBUG_DEATH({ max_branchless(x, y); }, expected_exit_msg(x, y));
-    }
-
-    {
-        constexpr auto x{std::numeric_limits<unsigned int>::min()};
-        constexpr auto y{std::numeric_limits<unsigned int>::max()};
         ASSERT_DEBUG_DEATH({ max_branchless(x, y); }, expected_exit_msg(x, y));
     }
 }

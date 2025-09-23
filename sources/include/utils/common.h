@@ -109,13 +109,23 @@ inline constexpr bool is_integral_not_bool_v = is_integral_not_bool<T>::value;
 
 template <typename T>
 struct is_uint
-    : std::conjunction<std::is_unsigned<T>,
+    : std::conjunction<std::is_unsigned<T>, std::is_integral<T>,
                        std::negation<std::is_same<T, bool>>>
 {
 };
 
 template <typename T>
 inline constexpr bool is_uint_v = is_uint<T>::value;
+
+template <typename T>
+struct is_int
+    : std::conjunction<std::is_signed<T>, std::is_integral<T>,
+                       std::negation<std::is_same<T, bool>>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_int_v = is_int<T>::value;
 
 template <typename T>
 struct is_uint_or_byte
@@ -724,47 +734,47 @@ constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sub_overflow(
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_integral_not_bool_v<T>, T> min_branchless(
-    T a_x, T a_y) noexcept
+constexpr std::enable_if_t<is_uint_v<T>, T> min_branchless(T x, T y) noexcept
 {
-    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(a_x, a_y),
-                                "a_x(%d) - a_y(%d) will overflow", a_x, a_y);
-    using unsigned_t =
-        std::conditional_t<std::is_signed_v<T>, std::make_unsigned_t<T>, T>;
-    using signed_t = std::make_signed_t<unsigned_t>;
+    return y ^ ((x ^ y) & -(x < y));
+}
 
-    static_assert(std::is_unsigned_v<unsigned_t>);
+template <typename T>
+constexpr std::enable_if_t<is_int_v<T>, T> min_branchless(T x, T y) noexcept
+{
+    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(x, y),
+                                "x(%d) - y(%d) will overflow", x, y);
+    using unsigned_t = std::make_unsigned_t<T>;
 
-    const auto xy_diff{static_cast<unsigned_t>(a_x) -
-                       static_cast<unsigned_t>(a_y)};
-    constexpr auto shift{std::numeric_limits<signed_t>::digits};
+    const auto xy_diff{static_cast<unsigned_t>(x) - static_cast<unsigned_t>(y)};
+    constexpr auto shift{std::numeric_limits<T>::digits};
     const unsigned_t shifted{
-        static_cast<unsigned_t>(static_cast<signed_t>(xy_diff) >> shift)};
+        static_cast<unsigned_t>(static_cast<T>(xy_diff) >> shift)};
     const auto r =
-        static_cast<T>(static_cast<unsigned_t>(a_y) + (xy_diff & shifted));
+        static_cast<T>(static_cast<unsigned_t>(y) + (xy_diff & shifted));
     return r;
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_integral_not_bool_v<T>, T> max_branchless(
-    T a_x, T a_y) noexcept
+constexpr std::enable_if_t<is_uint_v<T>, T> max_branchless(T x, T y) noexcept
 {
-    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(a_x, a_y),
-                                "a_x(%d) - a_y(%d) will overflow", a_x, a_y);
-    using unsigned_t =
-        std::conditional_t<std::is_signed_v<T>, std::make_unsigned_t<T>, T>;
-    using signed_t = std::make_signed_t<unsigned_t>;
+    return x ^ ((x ^ y) & -(x < y));
+}
 
-    static_assert(std::is_unsigned_v<unsigned_t>);
+template <typename T>
+constexpr std::enable_if_t<is_int_v<T>, T> max_branchless(T x, T y) noexcept
+{
+    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(x, y),
+                                "x(%d) - y(%d) will overflow", x, y);
+    using unsigned_t = std::make_unsigned_t<T>;
 
-    const auto xy_diff{static_cast<unsigned_t>(a_x) -
-                       static_cast<unsigned_t>(a_y)};
-    constexpr auto shift{std::numeric_limits<signed_t>::digits};
+    const auto xy_diff{static_cast<unsigned_t>(x) - static_cast<unsigned_t>(y)};
+    constexpr auto shift{std::numeric_limits<T>::digits};
     const unsigned_t shifted{
-        static_cast<unsigned_t>(static_cast<signed_t>(xy_diff) >> shift)};
+        static_cast<unsigned_t>(static_cast<T>(xy_diff) >> shift)};
 
     const auto r =
-        static_cast<T>(static_cast<unsigned_t>(a_x) - (xy_diff & shifted));
+        static_cast<T>(static_cast<unsigned_t>(x) - (xy_diff & shifted));
     return r;
 }
 
