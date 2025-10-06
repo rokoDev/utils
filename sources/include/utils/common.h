@@ -465,7 +465,7 @@ inline constexpr auto chunk_count(U aValue) noexcept
 template <typename U>
 inline constexpr auto bytes_count(U aValue) noexcept
 {
-    return chunk_count<CHAR_BIT>(aValue);
+    return chunk_count<static_cast<std::size_t>(CHAR_BIT)>(aValue);
 }
 
 template <auto PowOf2, typename P>
