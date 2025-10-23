@@ -679,6 +679,34 @@ template <uint8_t BytesCount>
 using fast_uint_from_nbytes_t =
     typename fast_uint_from_nbits<BytesCount * CHAR_BIT>::type;
 
+template <typename T>
+struct is_implicit_convertible_to_uint
+    : std::conjunction<std::negation<is_int<T>>,
+                       std::disjunction<std::is_convertible<T, std::uint8_t>,
+                                        std::is_convertible<T, std::uint16_t>,
+                                        std::is_convertible<T, std::uint32_t>,
+                                        std::is_convertible<T, std::uint64_t>>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_implicit_convertible_to_uint_v =
+    is_implicit_convertible_to_uint<T>::value;
+
+template <typename T>
+struct is_implicit_convertible_to_int
+    : std::conjunction<std::negation<is_uint<T>>,
+                       std::disjunction<std::is_convertible<T, std::int8_t>,
+                                        std::is_convertible<T, std::int16_t>,
+                                        std::is_convertible<T, std::int32_t>,
+                                        std::is_convertible<T, std::int64_t>>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_implicit_convertible_to_int_v =
+    is_implicit_convertible_to_int<T>::value;
+
 template <typename T, typename = std::enable_if_t<
                           is_integral_not_bool_v<remove_cvref_t<T>>>>
 constexpr decltype(auto) abs_branchless(T&& a_value) noexcept
@@ -734,9 +762,10 @@ constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sub_overflow(
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_uint_v<T>, T> min_branchless(T x, T y) noexcept
+constexpr std::enable_if_t<is_implicit_convertible_to_uint_v<T>, T>
+min_branchless(T x, T y) noexcept
 {
-    return y ^ ((x ^ y) & -(x < y));
+    return T{y ^ ((x ^ y) & -(x < y))};
 }
 
 template <typename T>
@@ -756,9 +785,10 @@ constexpr std::enable_if_t<is_int_v<T>, T> min_branchless(T x, T y) noexcept
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_uint_v<T>, T> max_branchless(T x, T y) noexcept
+constexpr std::enable_if_t<is_implicit_convertible_to_uint_v<T>, T>
+max_branchless(T x, T y) noexcept
 {
-    return x ^ ((x ^ y) & -(x < y));
+    return T{x ^ ((x ^ y) & -(x < y))};
 }
 
 template <typename T>
