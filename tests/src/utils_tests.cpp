@@ -1054,6 +1054,10 @@ TEST(UtilsTest, MinBranchless)
     static_assert(min_branchless(1ull, 10ull) == 1ull);
     static_assert(min_branchless(10ull, 1ull) == 1ull);
 
+    constexpr std::uint8_t v1{5};
+    constexpr std::uint8_t v2{15};
+    static_assert(min_branchless(v1, v2) == v1);
+
     static_assert(min_branchless(uint_limits::max(), uint_limits::max()) ==
                   uint_limits::max());
     static_assert(min_branchless(uint_limits::min(), uint_limits::max()) ==
@@ -1115,6 +1119,10 @@ TEST(UtilsTest, MaxBranchless)
     static_assert(max_branchless(1u, 100u) == 100u);
     static_assert(max_branchless(1ull, 10ull) == 10ull);
     static_assert(max_branchless(10ull, 1ull) == 10ull);
+
+    constexpr std::uint8_t v1{5};
+    constexpr std::uint8_t v2{15};
+    static_assert(max_branchless(v1, v2) == v2);
 
     static_assert(max_branchless(uint_limits::max(), uint_limits::max()) ==
                   uint_limits::max());

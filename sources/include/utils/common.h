@@ -765,7 +765,7 @@ template <typename T>
 constexpr std::enable_if_t<is_implicit_convertible_to_uint_v<T>, T>
 min_branchless(T x, T y) noexcept
 {
-    return T{y ^ ((x ^ y) & -(x < y))};
+    return static_cast<T>(y ^ ((x ^ y) & -(x < y)));
 }
 
 template <typename T>
@@ -788,7 +788,7 @@ template <typename T>
 constexpr std::enable_if_t<is_implicit_convertible_to_uint_v<T>, T>
 max_branchless(T x, T y) noexcept
 {
-    return T{x ^ ((x ^ y) & -(x < y))};
+    return static_cast<T>(x ^ ((x ^ y) & -(x < y)));
 }
 
 template <typename T>
