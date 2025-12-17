@@ -413,6 +413,19 @@ TEST(UtilsTest, NextMultipleOf16)
     static_assert(next_multiple_of<CHAR_BIT * 2>(17u) == 32);
 }
 
+TEST(UtilsTest, IsMultipleOf)
+{
+    using utils::is_multiple_of;
+
+    static_assert(is_multiple_of(0, CHAR_BIT));
+    static_assert(is_multiple_of(8, CHAR_BIT));
+    static_assert(is_multiple_of(16, CHAR_BIT));
+    static_assert(not is_multiple_of(19, CHAR_BIT));
+    static_assert(not is_multiple_of(19, 3));
+    static_assert(is_multiple_of(18, 3));
+    static_assert(is_multiple_of(18, 18));
+}
+
 TEST(UtilsTest, IsRefWrapper)
 {
     static_assert(not utils::is_ref_wrapper_v<int>);

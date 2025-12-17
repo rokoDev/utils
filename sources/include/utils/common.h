@@ -96,6 +96,7 @@
 
 namespace utils
 {
+inline void abort_if(const bool, char const* = nullptr, ...) noexcept;
 
 template <typename T>
 struct is_integral_not_bool
@@ -456,6 +457,26 @@ next_multiple_of(U aValue) noexcept
     return (aValue + static_cast<U>(PowOf2 - 1)) & -static_cast<U>(PowOf2);
 }
 
+namespace details
+{
+template <typename... Ts>
+struct is_integral_types
+    : std::conjunction<std::is_integral<remove_cvref_t<Ts>>...>
+{
+};
+
+template <typename... Ts>
+inline constexpr bool is_integral_types_v = is_integral_types<Ts...>::value;
+}  // namespace details
+
+template <typename T1, typename T2>
+constexpr std::enable_if_t<details::is_integral_types_v<T1, T2>, bool>
+is_multiple_of(const T1 a_value, const T2 a_multiple) noexcept
+{
+    UTILS_DEBUG_ABORT_IF_REASON(a_multiple == 0, "a_multiple == 0");
+    return a_value % a_multiple == 0;
+}
+
 template <auto PowOf2, typename U>
 inline constexpr auto chunk_count(U aValue) noexcept
 {
@@ -543,8 +564,7 @@ inline bool is_aligned(void const* aPtr) noexcept
 }
 
 [[maybe_unused]] inline void abort_if(const bool aCondition,
-                                      char const* aFormat = nullptr,
-                                      ...) noexcept
+                                      char const* aFormat, ...) noexcept
 {
     if (aCondition)
     {
