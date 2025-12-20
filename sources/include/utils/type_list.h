@@ -101,14 +101,6 @@ struct type_list_impl
     {
     };
 
-    template <template <typename> typename Predicate, typename... Types>
-    struct count_of_predicate_compliant_impl
-        : std::integral_constant<std::size_t, (0 + ... +
-                                               static_cast<std::size_t>(
-                                                   Predicate<Types>::value))>
-    {
-    };
-
     template <std::size_t Index, template <typename...> typename Predicate,
               typename TypeList, typename... RestPredArgs>
     struct index_of_impl;
@@ -209,9 +201,16 @@ struct type_list
         impl::template count_of_impl<T, Ts...>::value;
 
     template <template <typename> typename Predicate>
-    static constexpr std::size_t count_of_predicate_compliant =
-        impl::template count_of_predicate_compliant_impl<Predicate,
-                                                         Ts...>::value;
+    struct count_of_predicate_compliant
+        : std::integral_constant<std::size_t, (0 + ... +
+                                               static_cast<std::size_t>(
+                                                   Predicate<Ts>::value))>
+    {
+    };
+
+    template <template <typename> typename Predicate>
+    static constexpr std::size_t count_of_predicate_compliant_v =
+        count_of_predicate_compliant<Predicate>::value;
 
     template <typename T>
     struct contains : std::bool_constant<static_cast<bool>(count_of<T>)>
@@ -228,8 +227,14 @@ struct type_list
     static constexpr bool contains_v = contains<T>::value;
 
     template <template <typename> typename Predicate>
-    static constexpr bool contains_predicate_compliant =
-        count_of_predicate_compliant<Predicate>;
+    struct contains_predicate_compliant
+        : std::bool_constant<count_of_predicate_compliant_v<Predicate> != 0>
+    {
+    };
+
+    template <template <typename> typename Predicate>
+    static constexpr bool contains_predicate_compliant_v =
+        contains_predicate_compliant<Predicate>::value;
 
     static constexpr bool contains_copies = std::disjunction_v<
         typename impl::template more_than_once<Ts, Ts...>...>;

@@ -218,13 +218,13 @@ TEST(UtilsTypeList, CountOfPredicateCompliant)
         using type_list = utils::type_list<>;
 
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_enum> == 0,
+            type_list::count_of_predicate_compliant_v<std::is_enum> == 0,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_integral> == 0,
+            type_list::count_of_predicate_compliant_v<std::is_integral> == 0,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_floating_point> ==
+            type_list::count_of_predicate_compliant_v<std::is_floating_point> ==
                 0,
             "invalid value");
     }
@@ -233,13 +233,13 @@ TEST(UtilsTypeList, CountOfPredicateCompliant)
         using type_list = utils::type_list<eFileError>;
 
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_enum> == 1,
+            type_list::count_of_predicate_compliant_v<std::is_enum> == 1,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_integral> == 0,
+            type_list::count_of_predicate_compliant_v<std::is_integral> == 0,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_floating_point> ==
+            type_list::count_of_predicate_compliant_v<std::is_floating_point> ==
                 0,
             "invalid value");
     }
@@ -250,17 +250,17 @@ TEST(UtilsTypeList, CountOfPredicateCompliant)
                              eFileError, eWriterError, double, eFileError>;
 
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_enum> == 5,
+            type_list::count_of_predicate_compliant_v<std::is_enum> == 5,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_floating_point> ==
+            type_list::count_of_predicate_compliant_v<std::is_floating_point> ==
                 2,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_integral> == 1,
+            type_list::count_of_predicate_compliant_v<std::is_integral> == 1,
             "invalid value");
         static_assert(
-            type_list::count_of_predicate_compliant<std::is_void> == 0,
+            type_list::count_of_predicate_compliant_v<std::is_void> == 0,
             "invalid value");
     }
 }
@@ -360,27 +360,28 @@ TEST(UtilsTypeList, ContainsPredicateCompliant)
     {
         using type_list = utils::type_list<>;
 
-        static_assert(not type_list::contains_predicate_compliant<std::is_enum>,
+        static_assert(
+            not type_list::contains_predicate_compliant_v<std::is_enum>,
+            "invalid value");
+        static_assert(
+            not type_list::contains_predicate_compliant_v<std::is_integral>,
+            "invalid value");
+        static_assert(not type_list::contains_predicate_compliant_v<
+                          std::is_floating_point>,
                       "invalid value");
-        static_assert(
-            not type_list::contains_predicate_compliant<std::is_integral>,
-            "invalid value");
-        static_assert(
-            not type_list::contains_predicate_compliant<std::is_floating_point>,
-            "invalid value");
     }
 
     {
         using type_list = utils::type_list<eFileError>;
 
-        static_assert(type_list::contains_predicate_compliant<std::is_enum>,
+        static_assert(type_list::contains_predicate_compliant_v<std::is_enum>,
                       "invalid value");
         static_assert(
-            not type_list::contains_predicate_compliant<std::is_integral>,
+            not type_list::contains_predicate_compliant_v<std::is_integral>,
             "invalid value");
-        static_assert(
-            not type_list::contains_predicate_compliant<std::is_floating_point>,
-            "invalid value");
+        static_assert(not type_list::contains_predicate_compliant_v<
+                          std::is_floating_point>,
+                      "invalid value");
     }
 
     {
@@ -388,15 +389,17 @@ TEST(UtilsTypeList, ContainsPredicateCompliant)
             utils::type_list<eFileError, int32_t, eReaderError, float,
                              eFileError, eWriterError, double, eFileError>;
 
-        static_assert(type_list::contains_predicate_compliant<std::is_enum>,
+        static_assert(type_list::contains_predicate_compliant_v<std::is_enum>,
                       "invalid value");
         static_assert(
-            type_list::contains_predicate_compliant<std::is_floating_point>,
+            type_list::contains_predicate_compliant_v<std::is_floating_point>,
             "invalid value");
-        static_assert(type_list::contains_predicate_compliant<std::is_integral>,
-                      "invalid value");
-        static_assert(not type_list::contains_predicate_compliant<std::is_void>,
-                      "invalid value");
+        static_assert(
+            type_list::contains_predicate_compliant_v<std::is_integral>,
+            "invalid value");
+        static_assert(
+            not type_list::contains_predicate_compliant_v<std::is_void>,
+            "invalid value");
     }
 }
 
