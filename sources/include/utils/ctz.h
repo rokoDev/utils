@@ -149,7 +149,8 @@ constexpr decltype(auto) ctz(T aValue) noexcept
             static_cast<equal_size_t>(aValue));
     }
     else if constexpr (constexpr std::size_t i =
-                           sorted_ctz_types::index_of<details::less_eq_pred, T>;
+                           sorted_ctz_types::index_of_v<details::less_eq_pred,
+                                                        T>;
                        i < sorted_ctz_types::size)
     {  // there is intrinsic that support type bigger than type T
         using supported_t = typename sorted_ctz_types::at<i>;
