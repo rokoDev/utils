@@ -185,9 +185,14 @@ struct type_list
 
     template <template <typename...> typename Predicate,
               typename... RestPredArgs>
-    static constexpr std::size_t index_of =
-        impl::template index_of_impl<0, Predicate, type_list<Ts...>,
-                                     RestPredArgs...>::value;
+    using index_of =
+        typename impl::template index_of_impl<0, Predicate, type_list<Ts...>,
+                                              RestPredArgs...>;
+
+    template <template <typename...> typename Predicate,
+              typename... RestPredArgs>
+    static constexpr std::size_t index_of_v =
+        index_of<Predicate, RestPredArgs...>::value;
 
     template <typename T>
     static constexpr std::size_t first_index_of_type =

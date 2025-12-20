@@ -74,21 +74,22 @@ TEST(UtilsTypeList, IndexOf)
     {
         using type_list = utils::type_list<>;
 
-        static_assert(type_list::index_of<std::is_enum> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_enum> == type_list::size,
                       "invalid index");
-        static_assert(type_list::index_of<std::is_signed> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_signed> == type_list::size,
                       "invalid index");
-        static_assert(type_list::index_of<std::is_void> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_void> == type_list::size,
                       "invalid index");
     }
 
     {
         using type_list = utils::type_list<eFileError>;
 
-        static_assert(type_list::index_of<std::is_enum> == 0, "invalid index");
-        static_assert(type_list::index_of<std::is_signed> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_enum> == 0,
                       "invalid index");
-        static_assert(type_list::index_of<std::is_void> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_signed> == type_list::size,
+                      "invalid index");
+        static_assert(type_list::index_of_v<std::is_void> == type_list::size,
                       "invalid index");
     }
 
@@ -96,12 +97,13 @@ TEST(UtilsTypeList, IndexOf)
         using type_list = utils::type_list<eFileError, int32_t, eReaderError,
                                            float, eFileError, eWriterError>;
 
-        static_assert(type_list::index_of<std::is_signed> == 1,
+        static_assert(type_list::index_of_v<std::is_signed> == 1,
                       "invalid index");
-        static_assert(type_list::index_of<std::is_floating_point> == 3,
+        static_assert(type_list::index_of_v<std::is_floating_point> == 3,
                       "invalid index");
-        static_assert(type_list::index_of<std::is_enum> == 0, "invalid index");
-        static_assert(type_list::index_of<std::is_void> == type_list::size,
+        static_assert(type_list::index_of_v<std::is_enum> == 0,
+                      "invalid index");
+        static_assert(type_list::index_of_v<std::is_void> == type_list::size,
                       "invalid index");
     }
 }
