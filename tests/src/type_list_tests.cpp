@@ -773,6 +773,28 @@ TEST(UtilsTypeList, Exclude)
     }
 }
 
+TEST(UtilsTypeList, TupleTypes)
+{
+    using utils::tuple_types_t;
+    using utils::type_list;
+
+    {
+        using tuple = std::tuple<>;
+        static_assert(std::is_same_v<type_list<>, tuple_types_t<tuple>>);
+    }
+
+    {
+        using tuple = std::tuple<int>;
+        static_assert(std::is_same_v<type_list<int>, tuple_types_t<tuple>>);
+    }
+
+    {
+        using tuple = std::tuple<int, float&, bool, char>;
+        static_assert(std::is_same_v<type_list<int, float&, bool, char>,
+                                     tuple_types_t<tuple>>);
+    }
+}
+
 TEST(UtilsTypeList, SortSizeofAscending)
 {
     using utils::sort_sizeof_ascending_t;

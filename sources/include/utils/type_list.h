@@ -2,6 +2,7 @@
 #define utils_type_list_h
 
 #include <cstddef>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -501,6 +502,18 @@ struct exclude
 
 template <typename TypeList, template <typename T> typename... Pred>
 using exclude_t = typename exclude<TypeList, Pred...>::type;
+
+template <typename Tuple>
+struct tuple_types;
+
+template <typename... Ts>
+struct tuple_types<std::tuple<Ts...>>
+{
+    using type = type_list<Ts...>;
+};
+
+template <typename Tuple>
+using tuple_types_t = typename tuple_types<Tuple>::type;
 
 template <typename TypeList>
 struct sort_sizeof_ascending;
