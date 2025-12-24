@@ -466,6 +466,42 @@ struct exclude_at
 template <typename TypeList, std::size_t I>
 using exclude_at_t = typename exclude_at<TypeList, I>::type;
 
+namespace details
+{
+template <typename Result, typename ToProcess,
+          template <typename> typename... Pred>
+struct exclude_impl;
+
+template <typename... Rs, template <typename> typename... Pred>
+struct exclude_impl<::utils::type_list<Rs...>, ::utils::type_list<>, Pred...>
+{
+    using type = ::utils::type_list<Rs...>;
+};
+
+template <typename... Rs, typename T, typename... Ts,
+          template <typename> typename... Pred>
+struct exclude_impl<::utils::type_list<Rs...>, ::utils::type_list<T, Ts...>,
+                    Pred...>
+{
+    using type = std::conditional_t<
+        std::disjunction_v<Pred<T>...>,
+        typename exclude_impl<::utils::type_list<Rs...>,
+                              ::utils::type_list<Ts...>, Pred...>::type,
+        typename exclude_impl<::utils::type_list<Rs..., T>,
+                              ::utils::type_list<Ts...>, Pred...>::type>;
+};
+}  // namespace details
+
+template <typename TypeList, template <typename T> typename... Pred>
+struct exclude
+{
+    using type =
+        typename details::exclude_impl<type_list<>, TypeList, Pred...>::type;
+};
+
+template <typename TypeList, template <typename T> typename... Pred>
+using exclude_t = typename exclude<TypeList, Pred...>::type;
+
 template <typename TypeList>
 struct sort_sizeof_ascending;
 

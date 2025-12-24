@@ -725,6 +725,54 @@ TEST(UtilsTypeList, ExcludeAt)
             type_list<float, char, std::int16_t>>);
 }
 
+TEST(UtilsTypeList, Exclude)
+{
+    using utils::exclude_t;
+    using utils::type_list;
+
+    {
+        using list = type_list<>;
+        static_assert(std::is_same_v<list, exclude_t<list>>);
+        static_assert(std::is_same_v<list, exclude_t<list, std::is_enum>>);
+        static_assert(
+            std::is_same_v<list,
+                           exclude_t<list, std::is_enum, std::is_integral>>);
+    }
+
+    {
+        using list = type_list<eReaderError>;
+        static_assert(std::is_same_v<list, exclude_t<list>>);
+        static_assert(
+            std::is_same_v<type_list<>, exclude_t<list, std::is_enum>>);
+        static_assert(std::is_same_v<list, exclude_t<list, std::is_integral>>);
+        static_assert(
+            std::is_same_v<type_list<>,
+                           exclude_t<list, std::is_enum, std::is_integral>>);
+    }
+
+    {
+        using list = type_list<int, bool, eReaderError, float, const bool,
+                               eWriterError, double, char>;
+        static_assert(std::is_same_v<list, exclude_t<list>>);
+        static_assert(std::is_same_v<type_list<int, bool, eReaderError,
+                                               const bool, eWriterError, char>,
+                                     exclude_t<list, std::is_floating_point>>);
+        static_assert(std::is_same_v<
+                      type_list<int, bool, float, const bool, double, char>,
+                      exclude_t<list, std::is_enum>>);
+        static_assert(
+            std::is_same_v<type_list<eReaderError, float, eWriterError, double>,
+                           exclude_t<list, std::is_integral>>);
+        static_assert(
+            std::is_same_v<
+                type_list<eReaderError, eWriterError>,
+                exclude_t<list, std::is_integral, std::is_floating_point>>);
+        static_assert(std::is_same_v<type_list<int, bool, eReaderError, float,
+                                               eWriterError, double, char>,
+                                     exclude_t<list, std::is_const>>);
+    }
+}
+
 TEST(UtilsTypeList, SortSizeofAscending)
 {
     using utils::sort_sizeof_ascending_t;
