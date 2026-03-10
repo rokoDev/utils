@@ -18,7 +18,7 @@ using namespace std::string_view_literals;
 
 constexpr int func_constexpr(int arg) noexcept
 {
-    UTILS_ABORT_IF(arg);
+    UTILS_ABORT_IF_RUN_CTX(arg);
     return arg + 5;
 }
 
@@ -621,15 +621,16 @@ TEST(UtilsDeathTest, AbortIfReasonFormatMsg)
 TEST(UtilsDeathTest, DebugAbortIfReasonSimpleMsg)
 {
     [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: valid")};
-    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ABORT_IF_REASON(true, "valid"); },
+    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(true, "valid"); },
                        exit_validator);
 }
 
 TEST(UtilsDeathTest, DebugAbortIfReasonFormatMsg)
 {
     [[maybe_unused]] const auto exit_validator{EndsWith("\nreason: v = 5")};
-    ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ABORT_IF_REASON(true, "v = %d", 5); },
-                       exit_validator);
+    ASSERT_DEBUG_DEATH(
+        { UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(true, "v = %d", 5); },
+        exit_validator);
 }
 
 TEST(UtilsDeathTest, AssertUnreachable)
@@ -646,7 +647,7 @@ TEST(UtilsDeathTest, DebugAssertUnreachable)
     ASSERT_DEBUG_DEATH({ UTILS_DEBUG_ASSERT_UNREACHABLE; }, exit_validator);
 }
 
-#define U_D_ABORT_IF(...) UTILS_DEBUG_ABORT_IF(__VA_ARGS__)
+#define U_D_ABORT_IF(...) UTILS_DEBUG_ABORT_IF_RUN_CTX(__VA_ARGS__)
 TEST(UtilsDeathTest, DebugAbortIfMacroWithEmptyMessage)
 {
     ASSERT_DEBUG_DEATH({ U_D_ABORT_IF(true); }, EXIT_MSG(""));

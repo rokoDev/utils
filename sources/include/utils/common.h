@@ -60,8 +60,7 @@
     utils::abort_if(condition,                                           \
                     "[ERROR]\n" UTILS_FILE_LINE "\nfunc: %s" format_str, \
                     UTILS_FUNC, __VA_ARGS__)
-#define UTILS_ABORT_IF(...) \
-    UTILS_ENABLE_IN_RUNTIME_CONTEXT(UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", ""))
+#define UTILS_ABORT_IF(...) UTILS_ABORT_IF_HELPER(__VA_ARGS__, "", "")
 #else
 #error "UTILS_ABORT_IF already defined somewhere"
 #endif
@@ -77,19 +76,37 @@
 #error "UTILS_ABORT_IF_REASON already defined somewhere"
 #endif
 
+#ifndef UTILS_ABORT_IF_RUN_CTX
+#define UTILS_ABORT_IF_RUN_CTX(...) \
+    UTILS_ENABLE_IN_RUNTIME_CONTEXT(UTILS_ABORT_IF(__VA_ARGS__))
+#else
+#error "UTILS_ABORT_IF_RUN_CTX already defined somewhere"
+#endif
+
+#ifndef UTILS_ABORT_IF_REASON_RUN_CTX
+#define UTILS_ABORT_IF_REASON_RUN_CTX(condition, ...) \
+    UTILS_ENABLE_IN_RUNTIME_CONTEXT(                  \
+        UTILS_ABORT_IF_REASON(condition, __VA_ARGS__))
+#else
+#error "UTILS_ABORT_IF_REASON_RUN_CTX already defined somewhere"
+#endif
+
 #ifndef UTILS_ASSERT_UNREACHABLE
 #define UTILS_ASSERT_UNREACHABLE \
-    UTILS_ABORT_IF_REASON(true, "this code should be unreachable")
+    UTILS_ABORT_IF_REASON_RUN_CTX(true, "this code should be unreachable")
 #else
 #error "UTILS_ASSERT_UNREACHABLE already defined somewhere"
 #endif
 
 #ifdef NDEBUG
-#define UTILS_DEBUG_ABORT_IF(...)
+#define UTILS_DEBUG_ABORT_IF_RUN_CTX(...)
+#define UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(...)
 #define UTILS_DEBUG_ABORT_IF_REASON(...)
 #define UTILS_DEBUG_ASSERT_UNREACHABLE
 #else
-#define UTILS_DEBUG_ABORT_IF(...) UTILS_ABORT_IF(__VA_ARGS__)
+#define UTILS_DEBUG_ABORT_IF_RUN_CTX(...) UTILS_ABORT_IF_RUN_CTX(__VA_ARGS__)
+#define UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(...) \
+    UTILS_ABORT_IF_REASON_RUN_CTX(__VA_ARGS__)
 #define UTILS_DEBUG_ABORT_IF_REASON(...) UTILS_ABORT_IF_REASON(__VA_ARGS__)
 #define UTILS_DEBUG_ASSERT_UNREACHABLE UTILS_ASSERT_UNREACHABLE
 #endif
@@ -473,7 +490,7 @@ template <typename T1, typename T2>
 constexpr std::enable_if_t<details::is_integral_types_v<T1, T2>, bool>
 is_multiple_of(const T1 a_value, const T2 a_multiple) noexcept
 {
-    UTILS_DEBUG_ABORT_IF_REASON(a_multiple == 0, "a_multiple == 0");
+    UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(a_multiple == 0, "a_multiple == 0");
     return a_value % a_multiple == 0;
 }
 
@@ -791,8 +808,8 @@ min_branchless(T x, T y) noexcept
 template <typename T>
 constexpr std::enable_if_t<is_int_v<T>, T> min_branchless(T x, T y) noexcept
 {
-    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(x, y),
-                                "x(%d) - y(%d) will overflow", x, y);
+    UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(will_sub_overflow(x, y),
+                                        "x(%d) - y(%d) will overflow", x, y);
     using unsigned_t = std::make_unsigned_t<T>;
 
     const auto xy_diff{static_cast<unsigned_t>(x) - static_cast<unsigned_t>(y)};
@@ -814,8 +831,8 @@ max_branchless(T x, T y) noexcept
 template <typename T>
 constexpr std::enable_if_t<is_int_v<T>, T> max_branchless(T x, T y) noexcept
 {
-    UTILS_DEBUG_ABORT_IF_REASON(will_sub_overflow(x, y),
-                                "x(%d) - y(%d) will overflow", x, y);
+    UTILS_DEBUG_ABORT_IF_REASON_RUN_CTX(will_sub_overflow(x, y),
+                                        "x(%d) - y(%d) will overflow", x, y);
     using unsigned_t = std::make_unsigned_t<T>;
 
     const auto xy_diff{static_cast<unsigned_t>(x) - static_cast<unsigned_t>(y)};

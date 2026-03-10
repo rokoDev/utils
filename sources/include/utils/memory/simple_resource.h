@@ -168,11 +168,12 @@ class simple_resource : public memory_resource
 
     ~simple_resource() override
     {
-        UTILS_ABORT_IF(busy_count_,
-                       "\nreason: simple_resource is being destroyed while %d "
-                       "of its regions "
-                       "are in use.",
-                       busy_count_);
+        UTILS_ABORT_IF_RUN_CTX(
+            busy_count_,
+            "\nreason: simple_resource is being destroyed while %d "
+            "of its regions "
+            "are in use.",
+            busy_count_);
     }
 
     simple_resource(const simple_resource &) = delete;
@@ -338,7 +339,7 @@ class simple_resource : public memory_resource
             return;
         }
 
-        UTILS_ABORT_IF(
+        UTILS_ABORT_IF_RUN_CTX(
             !is_aligned(aPtr, BlockSize),
             "\nreason: pointer(%p) which is being deallocated must be aligned "
             "at least as one block size(%d)",
@@ -356,13 +357,14 @@ class simple_resource : public memory_resource
         }
         else
         {
-            UTILS_ABORT_IF(aPtr < static_cast<void *>(data_),
-                           "\nreason: deallocating pointer(%p) is less than "
-                           "simple_resource's "
-                           "left boundary(%p)",
-                           aPtr, data_);
+            UTILS_ABORT_IF_RUN_CTX(
+                aPtr < static_cast<void *>(data_),
+                "\nreason: deallocating pointer(%p) is less than "
+                "simple_resource's "
+                "left boundary(%p)",
+                aPtr, data_);
 
-            UTILS_ABORT_IF(
+            UTILS_ABORT_IF_RUN_CTX(
                 (aPtr >= static_cast<void *>(data_ + this->size())) &&
                     !upstream_,
                 "\nreason: deallocating pointer(%p) is more than "
@@ -375,10 +377,11 @@ class simple_resource : public memory_resource
     BIndex deallocate_blocks(const BIndex aIndex) noexcept
     {
         assert(aIndex < block_count_);
-        UTILS_ABORT_IF(not in_use(aIndex),
-                       "\nreason: trying to deallocate block(%d) that was not "
-                       "marked as allocated",
-                       aIndex);
+        UTILS_ABORT_IF_RUN_CTX(
+            not in_use(aIndex),
+            "\nreason: trying to deallocate block(%d) that was not "
+            "marked as allocated",
+            aIndex);
 
         reset_in_use(aIndex);
         assert(busy_count_ > 0);
