@@ -1004,3 +1004,138 @@ TEST(UtilsTypeList, SelectTypes)
         static_assert(std::is_same_v<actual, expected>);
     }
 }
+
+TEST(UtilsTypeList, ZipLists)
+{
+    using namespace utils;
+    {
+        using T1 = double;
+        using T2 = value_list<1, 2>;
+        using T3 = unsigned int;
+        using T4 = type_list<short, int>;
+        using T5 = int;
+        using T6 = float;
+        using T7 = int;
+        using T8 = void;
+
+        using list_1 = type_list<T1, T2, T3, T4>;
+        using list_2 = type_list<T5, T6, T7, T8>;
+        {
+            using expected =
+                type_list<type_list<T1, T5>, type_list<T2, T6>,
+                          type_list<T3, T7>, type_list<short, int, T8>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using T1 = type_list<void, short, int>;
+        using T2 = value_list<1, 2>;
+        using T3 = unsigned int;
+        using T4 = type_list<short, int>;
+        using T5 = int;
+        using T6 = float;
+        using T7 = int;
+        using T8 = void;
+
+        using list_1 = type_list<T1, T2, T3, T4>;
+        using list_2 = type_list<T5, T6, T7, T8>;
+        {
+            using expected =
+                type_list<type_list<void, short, int, T5>, type_list<T2, T6>,
+                          type_list<T3, T7>, type_list<short, int, T8>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using T1 = type_list<void, short, int>;
+        using T2 = type_list<void, short, int>;
+        using T3 = type_list<void, short, int>;
+        using T4 = type_list<void, short, int>;
+        using T5 = type_list<char, void, short>;
+        using T6 = type_list<char, void, short>;
+        using T7 = type_list<char, void, short>;
+        using T8 = type_list<char, void, short>;
+
+        using list_1 = type_list<T1, T2, T3, T4>;
+        using list_2 = type_list<T5, T6, T7, T8>;
+        {
+            using expected =
+                type_list<type_list<void, short, int, char, void, short>,
+                          type_list<void, short, int, char, void, short>,
+                          type_list<void, short, int, char, void, short>,
+                          type_list<void, short, int, char, void, short>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using T1 = type_list<void, short, int>;
+        using T2 = type_list<void, short, int>;
+        using T3 = type_list<void, short, int>;
+        using T4 = type_list<void, short, int>;
+        using T5 = type_list<char, void, short, float>;
+
+        using list_1 = type_list<T1, T2, T3, T4>;
+        using list_2 = T5;
+        {
+            using expected = type_list<type_list<void, short, int, char>,
+                                       type_list<void, short, int, void>,
+                                       type_list<void, short, int, short>,
+                                       type_list<void, short, int, float>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using T1 = type_list<void, short, int>;
+        using T2 = type_list<void, short, int>;
+        using T3 = type_list<void, short, int>;
+        using T4 = type_list<void, short, int>;
+        using T5 = type_list<char, void, short, float>;
+
+        using list_1 = T5;
+        using list_2 = type_list<T1, T2, T3, T4>;
+        {
+            using expected = type_list<type_list<char, void, short, int>,
+                                       type_list<void, void, short, int>,
+                                       type_list<short, void, short, int>,
+                                       type_list<float, void, short, int>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using list_1 = type_list<void, short, int, nullptr_t>;
+        using list_2 = type_list<char, void, short, float>;
+
+        {
+            using expected =
+                type_list<type_list<void, char>, type_list<short, void>,
+                          type_list<int, short>, type_list<nullptr_t, float>>;
+            using actual = zip_lists_t<list_1, list_2>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+
+    {
+        using list_1 = type_list<void, short, int, nullptr_t>;
+        using list_2 = type_list<char, void, short, float>;
+        using list_3 = type_list<void, nullptr_t, char, double>;
+
+        {
+            using expected = type_list<type_list<void, char, void>,
+                                       type_list<short, void, nullptr_t>,
+                                       type_list<int, short, char>,
+                                       type_list<nullptr_t, float, double>>;
+            using actual = zip_lists_t<list_1, list_2, list_3>;
+            static_assert(std::is_same_v<actual, expected>);
+        }
+    }
+}

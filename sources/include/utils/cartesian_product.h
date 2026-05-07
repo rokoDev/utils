@@ -113,6 +113,59 @@ struct cartesian_product<List1, List2>
 
 template <typename List, typename... Lists>
 using cartesian_product_t = typename cartesian_product<List, Lists...>::type;
+
+namespace details
+{
+template <typename T1, typename T2>
+struct zip_2_lists
+{
+    using type = ::utils::type_list<T1, T2>;
+};
+
+template <typename... Ts1, typename... Ts2>
+struct zip_2_lists<::utils::type_list<Ts1...>, ::utils::type_list<Ts2...>>
+{
+    using type = ::utils::type_list<Ts1..., Ts2...>;
+};
+
+template <typename... Ts1, typename T2>
+struct zip_2_lists<::utils::type_list<Ts1...>, T2>
+{
+    using type = ::utils::type_list<Ts1..., T2>;
+};
+
+template <typename T1, typename... Ts2>
+struct zip_2_lists<T1, ::utils::type_list<Ts2...>>
+{
+    using type = ::utils::type_list<T1, Ts2...>;
+};
+
+template <typename T1, typename T2>
+using zip_2_lists_t = typename zip_2_lists<T1, T2>::type;
+
+template <typename List1, typename List2, typename... Lists>
+struct zip_lists_impl
+{
+    using type =
+        typename zip_lists_impl<typename zip_lists_impl<List1, List2>::type,
+                                Lists...>::type;
+};
+
+template <typename... Ts1, typename... Ts2>
+struct zip_lists_impl<::utils::type_list<Ts1...>, ::utils::type_list<Ts2...>>
+{
+    using type = ::utils::type_list<zip_2_lists_t<Ts1, Ts2>...>;
+};
+}  // namespace details
+
+template <typename List, typename... Lists>
+struct zip_lists
+{
+    using type = typename details::zip_lists_impl<List, Lists...>::type;
+};
+
+template <typename List, typename... Lists>
+using zip_lists_t = typename zip_lists<List, Lists...>::type;
 }  // namespace utils
 
 #endif /* utils_cartesian_product_h */
