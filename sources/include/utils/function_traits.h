@@ -6,9 +6,24 @@
 #include "detector.h"
 #include "type_list.h"
 
-#define CONCATENATE_2_TOKENS_IMPL(x, y) x##y
-#define CONCATENATE_2_TOKENS(x, y) CONCATENATE_2_TOKENS_IMPL(x, y)
-#define UNIQUE_NAME(prefix) CONCATENATE_2_TOKENS(rabbit_##prefix##_, __LINE__)
+#ifndef RABBIT_CONCATENATE_2_TOKENS_IMPL
+#define RABBIT_CONCATENATE_2_TOKENS_IMPL(x, y) x##y
+#else
+#error "RABBIT_CONCATENATE_2_TOKENS_IMPL already defined somewhere"
+#endif
+
+#ifndef RABBIT_CONCATENATE_2_TOKENS
+#define RABBIT_CONCATENATE_2_TOKENS(x, y) RABBIT_CONCATENATE_2_TOKENS_IMPL(x, y)
+#else
+#error "RABBIT_CONCATENATE_2_TOKENS already defined somewhere"
+#endif
+
+#ifndef RABBIT_UNIQUE_NAME
+#define RABBIT_UNIQUE_NAME(prefix) \
+    RABBIT_CONCATENATE_2_TOKENS(rabbit_##prefix##_, __LINE__)
+#else
+#error "RABBIT_UNIQUE_NAME already defined somewhere"
+#endif
 
 #define QUALIFIERS                  \
     X(, , , )                       \
@@ -293,19 +308,19 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
     SYMBOLIZED_STATIC_METHOD_QUALIFIERS(method_name)
 
 #define CREATE_FREE_FUNCTION_CHECKERS(function_name)                           \
-    namespace UNIQUE_NAME(dummy_ns)                                            \
+    namespace RABBIT_UNIQUE_NAME(dummy_ns)                                     \
     {                                                                          \
-        struct UNIQUE_NAME(dummy)                                              \
+        struct RABBIT_UNIQUE_NAME(dummy)                                       \
         {                                                                      \
         };                                                                     \
         template <typename T>                                                  \
-        static std::enable_if_t<std::is_same_v<T, UNIQUE_NAME(dummy)>>         \
+        static std::enable_if_t<std::is_same_v<T, RABBIT_UNIQUE_NAME(dummy)>>  \
         function_name();                                                       \
     }                                                                          \
                                                                                \
     namespace details                                                          \
     {                                                                          \
-    using namespace UNIQUE_NAME(dummy_ns);                                     \
+    using namespace RABBIT_UNIQUE_NAME(dummy_ns);                              \
                                                                                \
     template <typename... Args>                                                \
     using function_name##_return_t =                                           \
