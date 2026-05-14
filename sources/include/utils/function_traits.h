@@ -333,7 +333,8 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
     };                                                                         \
                                                                                \
     template <typename... Ts, typename... Args>                                \
-    struct is_##function_name##_invocable_impl<type_list<Ts...>, Args...>      \
+    struct is_##function_name##_invocable_impl<::utils::type_list<Ts...>,      \
+                                               Args...>                        \
     {                                                                          \
        private:                                                                \
         template <typename... Us, typename = decltype(function_name<Us...>(    \
@@ -362,7 +363,7 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
                                                                                \
     template <typename... Ts, typename... Args>                                \
     struct is_##function_name##_noexcept_invocable_impl<                       \
-        true, type_list<Ts...>, Args...>                                       \
+        true, ::utils::type_list<Ts...>, Args...>                              \
         : std::bool_constant<noexcept(                                         \
               function_name<Ts...>(std::declval<Args>()...))>                  \
     {                                                                          \
@@ -380,8 +381,8 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
     };                                                                         \
                                                                                \
     template <typename R, typename... Ts, typename... Args>                    \
-    struct is_##function_name##_invocable_r_impl<true, R, type_list<Ts...>,    \
-                                                 Args...>                      \
+    struct is_##function_name##_invocable_r_impl<                              \
+        true, R, ::utils::type_list<Ts...>, Args...>                           \
         : std::is_same<                                                        \
               decltype(function_name<Ts...>(std::declval<Args>()...)), R>      \
     {                                                                          \
@@ -789,11 +790,11 @@ using return_type_t = typename return_type<T>::type;
 template <typename T>
 struct params_list;
 
-#define X(c, v, r, n)                       \
-    template <typename R, typename... Args> \
-    struct params_list<R(Args...) c v r n>  \
-    {                                       \
-        using type = type_list<Args...>;    \
+#define X(c, v, r, n)                             \
+    template <typename R, typename... Args>       \
+    struct params_list<R(Args...) c v r n>        \
+    {                                             \
+        using type = ::utils::type_list<Args...>; \
     };
 QUALIFIERS
 #undef X
