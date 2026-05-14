@@ -8,7 +8,7 @@
 
 #define CONCATENATE_2_TOKENS_IMPL(x, y) x##y
 #define CONCATENATE_2_TOKENS(x, y) CONCATENATE_2_TOKENS_IMPL(x, y)
-#define UNIQUE_NAME(prefix) CONCATENATE_2_TOKENS(prefix, __LINE__)
+#define UNIQUE_NAME(prefix) CONCATENATE_2_TOKENS(rabbit_##prefix##_, __LINE__)
 
 #define QUALIFIERS                  \
     X(, , , )                       \
@@ -293,19 +293,19 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
     SYMBOLIZED_STATIC_METHOD_QUALIFIERS(method_name)
 
 #define CREATE_FREE_FUNCTION_CHECKERS(function_name)                           \
-    namespace UNIQUE_NAME(rabbit_dummy_ns_)                                    \
+    namespace UNIQUE_NAME(dummy_ns)                                            \
     {                                                                          \
-        struct UNIQUE_NAME(rabbit_dummy_)                                      \
+        struct UNIQUE_NAME(dummy)                                              \
         {                                                                      \
         };                                                                     \
         template <typename T>                                                  \
-        static std::enable_if_t<std::is_same_v<T, UNIQUE_NAME(rabbit_dummy_)>> \
+        static std::enable_if_t<std::is_same_v<T, UNIQUE_NAME(dummy)>>         \
         function_name();                                                       \
     }                                                                          \
                                                                                \
     namespace details                                                          \
     {                                                                          \
-    using namespace UNIQUE_NAME(rabbit_dummy_ns_);                             \
+    using namespace UNIQUE_NAME(dummy_ns);                                     \
                                                                                \
     template <typename... Args>                                                \
     using function_name##_return_t =                                           \
