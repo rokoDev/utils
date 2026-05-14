@@ -6,6 +6,10 @@
 #include "detector.h"
 #include "type_list.h"
 
+#define CONCATENATE_2_TOKENS_IMPL(x, y) x##y
+#define CONCATENATE_2_TOKENS(x, y) CONCATENATE_2_TOKENS_IMPL(x, y)
+#define UNIQUE_NAME(prefix) CONCATENATE_2_TOKENS(prefix, __LINE__)
+
 #define QUALIFIERS                  \
     X(, , , )                       \
     X(const, , , )                  \
@@ -288,74 +292,37 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
 #define CREATE_STATIC_METHOD_CHECKERS(method_name) \
     SYMBOLIZED_STATIC_METHOD_QUALIFIERS(method_name)
 
-#define CREATE_FREE_FUNCTION_CHECKERS(function_name)                        \
-    namespace details                                                       \
-    {                                                                       \
-    template <typename... Args>                                             \
-    using function_name##_return_t =                                        \
-        decltype(function_name(std::declval<Args>()...));                   \
-                                                                            \
-    template <typename... Args>                                             \
-    using function_name##_noexcept_return_t =                               \
-        std::enable_if_t<noexcept(function_name(std::declval<Args>()...)),  \
-                         decltype(function_name(std::declval<Args>()...))>; \
-    }                                                                       \
-                                                                            \
-    template <typename... Args>                                             \
-    struct is_##function_name##_invocable                                   \
-        : ::utils::is_detected<details::function_name##_return_t, Args...>  \
-    {                                                                       \
-    };                                                                      \
-                                                                            \
-    template <typename... Args>                                             \
-    inline constexpr bool is_##function_name##_invocable_v =                \
-        is_##function_name##_invocable<Args...>::value;                     \
-                                                                            \
-    template <typename... Args>                                             \
-    struct is_##function_name##_noexcept_invocable                          \
-        : ::utils::is_detected<details::function_name##_noexcept_return_t,  \
-                               Args...>                                     \
-    {                                                                       \
-    };                                                                      \
-                                                                            \
-    template <typename... Args>                                             \
-    inline constexpr bool is_##function_name##_noexcept_invocable_v =       \
-        is_##function_name##_noexcept_invocable<Args...>::value;            \
-                                                                            \
-    template <typename R, typename... Args>                                 \
-    struct is_##function_name##_invocable_r                                 \
-        : ::utils::is_detected_exact<R, details::function_name##_return_t,  \
-                                     Args...>                               \
-    {                                                                       \
-    };                                                                      \
-                                                                            \
-    template <typename R, typename... Args>                                 \
-    inline constexpr bool is_##function_name##_invocable_r_v =              \
-        is_##function_name##_invocable_r<R, Args...>::value;                \
-                                                                            \
-    template <typename R, typename... Args>                                 \
-    struct is_##function_name##_noexcept_invocable_r                        \
-        : ::utils::is_detected_exact<                                       \
-              R, details::function_name##_noexcept_return_t, Args...>       \
-    {                                                                       \
-    };                                                                      \
-                                                                            \
-    template <typename R, typename... Args>                                 \
-    inline constexpr bool is_##function_name##_noexcept_invocable_r_v =     \
-        is_##function_name##_noexcept_invocable_r<R, Args...>::value;
-
-#define CREATE_FREE_FUNCTION_TEMPLATE_CHECKERS(function_name)                  \
+#define CREATE_FREE_FUNCTION_CHECKERS(function_name)                           \
+    namespace UNIQUE_NAME(rabbit_dummy_ns_)                                    \
+    {                                                                          \
+        struct UNIQUE_NAME(rabbit_dummy_)                                      \
+        {                                                                      \
+        };                                                                     \
+        template <typename T>                                                  \
+        static std::enable_if_t<std::is_same_v<T, UNIQUE_NAME(rabbit_dummy_)>> \
+        function_name();                                                       \
+    }                                                                          \
+                                                                               \
     namespace details                                                          \
     {                                                                          \
-    template <typename TemplateParams, typename Args>                          \
-    struct is_##function_name##_invocable_template_impl;                       \
+    using namespace UNIQUE_NAME(rabbit_dummy_ns_);                             \
+                                                                               \
+    template <typename... Args>                                                \
+    using function_name##_return_t =                                           \
+        decltype(function_name(std::declval<Args>()...));                      \
+                                                                               \
+    template <typename... Args>                                                \
+    struct is_##function_name##_invocable_impl                                 \
+        : ::utils::is_detected<function_name##_return_t, Args...>              \
+    {                                                                          \
+    };                                                                         \
                                                                                \
     template <typename... Ts, typename... Args>                                \
-    struct is_##function_name##_invocable_template_impl<type_list<Ts...>,      \
-                                                        type_list<Args...>>    \
+    struct is_##function_name##_invocable_impl<type_list<Ts...>, Args...>      \
     {                                                                          \
        private:                                                                \
-        template <typename... Us>                                              \
+        template <typename... Us, typename = decltype(function_name<Us...>(    \
+                                      std::declval<Args>()...))>               \
         static auto test(int)                                                  \
             -> decltype(function_name<Us...>(std::declval<Args>()...),         \
                         std::true_type());                                     \
@@ -367,104 +334,87 @@ SYMBOLIZED_STATIC_METHOD_QUALIFIERS(unused)
         static constexpr bool value = decltype(test<Ts...>(0))::value;         \
     };                                                                         \
                                                                                \
-    template <typename TemplateParams, typename Args,                          \
-              bool IsInvocable = is_##function_name##_invocable_template_impl< \
-                  TemplateParams, Args>::value>                                \
-    struct is_##function_name##_noexcept_invocable_template_impl               \
-        : std::false_type                                                      \
+    template <bool IsInvocable, typename... Args>                              \
+    struct is_##function_name##_noexcept_invocable_impl : std::false_type      \
+    {                                                                          \
+    };                                                                         \
+                                                                               \
+    template <typename... Args>                                                \
+    struct is_##function_name##_noexcept_invocable_impl<true, Args...>         \
+        : std::bool_constant<noexcept(function_name(std::declval<Args>()...))> \
     {                                                                          \
     };                                                                         \
                                                                                \
     template <typename... Ts, typename... Args>                                \
-    struct is_##function_name##_noexcept_invocable_template_impl<              \
-        type_list<Ts...>, type_list<Args...>, true>                            \
+    struct is_##function_name##_noexcept_invocable_impl<                       \
+        true, type_list<Ts...>, Args...>                                       \
         : std::bool_constant<noexcept(                                         \
               function_name<Ts...>(std::declval<Args>()...))>                  \
     {                                                                          \
     };                                                                         \
                                                                                \
-    template <typename R, typename TemplateParams, typename Args,              \
-              bool IsInvocable = is_##function_name##_invocable_template_impl< \
-                  TemplateParams, Args>::value>                                \
-    struct is_##function_name##_invocable_template_r_impl : std::false_type    \
+    template <bool IsInvocable, typename R, typename... Args>                  \
+    struct is_##function_name##_invocable_r_impl : std::false_type             \
+    {                                                                          \
+    };                                                                         \
+                                                                               \
+    template <typename R, typename... Args>                                    \
+    struct is_##function_name##_invocable_r_impl<true, R, Args...>             \
+        : std::is_same<decltype(function_name(std::declval<Args>()...)), R>    \
     {                                                                          \
     };                                                                         \
                                                                                \
     template <typename R, typename... Ts, typename... Args>                    \
-    struct is_##function_name##_invocable_template_r_impl<                     \
-        R, type_list<Ts...>, type_list<Args...>, true>                         \
+    struct is_##function_name##_invocable_r_impl<true, R, type_list<Ts...>,    \
+                                                 Args...>                      \
         : std::is_same<                                                        \
               decltype(function_name<Ts...>(std::declval<Args>()...)), R>      \
     {                                                                          \
     };                                                                         \
-                                                                               \
-    template <typename R, typename TemplateParams, typename Args,              \
-              bool IsNoexceptInvocable =                                       \
-                  is_##function_name##_noexcept_invocable_template_impl<       \
-                      TemplateParams, Args>::value,                            \
-              bool IsMatchedReturnT =                                          \
-                  is_##function_name##_invocable_template_r_impl<              \
-                      R, TemplateParams, Args>::value>                         \
-    struct is_##function_name##_noexcept_invocable_template_r_impl             \
-        : std::false_type                                                      \
-    {                                                                          \
-    };                                                                         \
-                                                                               \
-    template <typename R, typename... Ts, typename... Args>                    \
-    struct is_##function_name##_noexcept_invocable_template_r_impl<            \
-        R, type_list<Ts...>, type_list<Args...>, true, true> : std::true_type  \
-    {                                                                          \
-    };                                                                         \
     }                                                                          \
                                                                                \
-    template <typename TemplateParams, typename... Args>                       \
-    struct is_##function_name##_invocable_template                             \
-        : details::is_##function_name##_invocable_template_impl<               \
-              TemplateParams, type_list<Args...>>                              \
+    template <typename... Args>                                                \
+    struct is_##function_name##_invocable                                      \
+        : details::is_##function_name##_invocable_impl<Args...>                \
     {                                                                          \
     };                                                                         \
                                                                                \
-    template <typename TemplateParams, typename... Args>                       \
-    inline constexpr bool is_##function_name##_invocable_template_v =          \
-        is_##function_name##_invocable_template<TemplateParams,                \
-                                                Args...>::value;               \
+    template <typename... Args>                                                \
+    inline constexpr bool is_##function_name##_invocable_v =                   \
+        is_##function_name##_invocable<Args...>::value;                        \
                                                                                \
-    template <typename TemplateParams, typename... Args>                       \
-    struct is_##function_name##_noexcept_invocable_template                    \
-        : details::is_##function_name##_noexcept_invocable_template_impl<      \
-              TemplateParams, type_list<Args...>>                              \
+    template <typename... Args>                                                \
+    struct is_##function_name##_noexcept_invocable                             \
+        : details::is_##function_name##_noexcept_invocable_impl<               \
+              is_##function_name##_invocable_v<Args...>, Args...>              \
     {                                                                          \
     };                                                                         \
                                                                                \
-    template <typename TemplateParams, typename... Args>                       \
-    inline constexpr bool is_##function_name##_noexcept_invocable_template_v = \
-        is_##function_name##_noexcept_invocable_template<TemplateParams,       \
-                                                         Args...>::value;      \
+    template <typename... Args>                                                \
+    inline constexpr bool is_##function_name##_noexcept_invocable_v =          \
+        is_##function_name##_noexcept_invocable<Args...>::value;               \
                                                                                \
-    template <typename R, typename TemplateParams, typename... Args>           \
-    struct is_##function_name##_invocable_template_r                           \
-        : details::is_##function_name##_invocable_template_r_impl<             \
-              R, TemplateParams, type_list<Args...>>                           \
+    template <typename R, typename... Args>                                    \
+    struct is_##function_name##_invocable_r                                    \
+        : details::is_##function_name##_invocable_r_impl<                      \
+              is_##function_name##_invocable_v<Args...>, R, Args...>           \
     {                                                                          \
     };                                                                         \
                                                                                \
-    template <typename R, typename TemplateParams, typename... Args>           \
-    inline constexpr bool is_##function_name##_invocable_template_r_v =        \
-        is_##function_name##_invocable_template_r<R, TemplateParams,           \
-                                                  Args...>::value;             \
+    template <typename R, typename... Args>                                    \
+    inline constexpr bool is_##function_name##_invocable_r_v =                 \
+        is_##function_name##_invocable_r<R, Args...>::value;                   \
                                                                                \
-    template <typename R, typename TemplateParams, typename... Args>           \
-    struct is_##function_name##_noexcept_invocable_template_r                  \
-        : details::is_##function_name##_noexcept_invocable_template_r_impl<    \
-              R, TemplateParams, type_list<Args...>>                           \
+    template <typename R, typename... Args>                                    \
+    struct is_##function_name##_noexcept_invocable_r                           \
+        : std::conjunction<is_##function_name##_noexcept_invocable<Args...>,   \
+                           is_##function_name##_invocable_r<R, Args...>>       \
     {                                                                          \
     };                                                                         \
                                                                                \
-    template <typename R, typename TemplateParams, typename... Args>           \
-    inline constexpr bool                                                      \
-        is_##function_name##_noexcept_invocable_template_r_v =                 \
-            is_##function_name##_noexcept_invocable_template_r<                \
-                R, TemplateParams, Args...>::value;
+    template <typename R, typename... Args>                                    \
+    inline constexpr bool is_##function_name##_noexcept_invocable_r_v =        \
+        is_##function_name##_noexcept_invocable_r<R, Args...>::value;
 
 namespace utils
 {
