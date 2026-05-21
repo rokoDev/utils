@@ -15,6 +15,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "std_traits.h"
 #include "value_list.h"
 
 #ifdef __clang__
@@ -171,17 +172,17 @@ template <typename T>
 constexpr tag_t<T> tag{};
 
 template <typename T>
-struct is_std_array : std::false_type
+struct is_c_array : std::false_type
 {
 };
 
-template <typename DataT, std::size_t Size>
-struct is_std_array<std::array<DataT, Size>> : std::true_type
+template <typename T, std::size_t N>
+struct is_c_array<T[N]> : std::true_type
 {
 };
 
 template <typename T>
-inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
+inline constexpr bool is_c_array_v = is_c_array<T>::value;
 
 template <class T>
 struct remove_cvref

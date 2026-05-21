@@ -306,6 +306,16 @@ struct has_size
 
 template <typename T>
 inline constexpr bool has_size_v = has_size<T>::value;
+
+template <typename T>
+struct is_iterable_container
+    : std::conjunction<std::negation<is_std_array<T>>, has_size<T>,
+                       is_iterable<T>>
+{
+};
+
+template <typename T>
+inline constexpr bool is_iterable_container_v = is_iterable_container<T>::value;
 }  // namespace utils
 
 #endif /* utils_std_traits_h */
