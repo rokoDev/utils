@@ -25,6 +25,10 @@ struct s4
     static int mem_type() { return 0; }
 };
 
+struct s5 : s1
+{
+};
+
 CREATE_MEMBER_TYPE_CHECKERS(mem_type)
 
 TEST(MemberTypeCheckers, HasType)
@@ -34,6 +38,7 @@ TEST(MemberTypeCheckers, HasType)
     static_assert(not has_type_mem_type_v<s2>);
     static_assert(not has_type_mem_type_v<s3>);
     static_assert(not has_type_mem_type_v<s4>);
+    static_assert(has_type_mem_type_v<s5>);
 }
 
 TEST(MemberTypeCheckers, HasConvertibleType)
