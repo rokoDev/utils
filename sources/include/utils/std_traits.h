@@ -20,6 +20,8 @@
 
 namespace utils
 {
+namespace details
+{
 CREATE_R_METHOD_CHECKERS(size)
 
 CREATE_MEMBER_TYPE_CHECKERS(iterator)
@@ -35,13 +37,15 @@ CREATE_FREE_FUNCTION_CHECKERS(end)
 
 CREATE_FREE_FUNCTION_CHECKERS(cbegin)
 CREATE_FREE_FUNCTION_CHECKERS(cend)
+}  // namespace details
 
 template <typename T>
 struct is_iterable
-    : std::disjunction<
-          std::conjunction<has_type_iterator<T>, has_invocable_begin<T>,
-                           has_invocable_end<T>>,
-          std::conjunction<is_begin_invocable<T>, is_end_invocable<T>>>
+    : std::disjunction<std::conjunction<details::has_type_iterator<T>,
+                                        details::has_invocable_begin<T>,
+                                        details::has_invocable_end<T>>,
+                       std::conjunction<details::is_begin_invocable<T>,
+                                        details::is_end_invocable<T>>>
 {
 };
 
@@ -50,10 +54,11 @@ inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
 template <typename T>
 struct is_const_iterable
-    : std::disjunction<
-          std::conjunction<has_type_const_iterator<T>, has_invocable_cbegin<T>,
-                           has_invocable_cend<T>>,
-          std::conjunction<is_cbegin_invocable<T>, is_cend_invocable<T>>>
+    : std::disjunction<std::conjunction<details::has_type_const_iterator<T>,
+                                        details::has_invocable_cbegin<T>,
+                                        details::has_invocable_cend<T>>,
+                       std::conjunction<details::is_cbegin_invocable<T>,
+                                        details::is_cend_invocable<T>>>
 {
 };
 
@@ -292,16 +297,15 @@ template <typename T>
 inline constexpr bool is_std_queue_v = is_std_queue<T>::value;
 
 template <typename T>
-struct has_size_and_iterable
-    : std::conjunction<
-          std::disjunction<has_invocable_r_size_const_noexcept<std::size_t, T>,
-                           has_invocable_r_size_const<std::size_t, T>>,
-          is_iterable<T>>
+struct has_size
+    : std::disjunction<
+          details::has_invocable_r_size_const_noexcept<std::size_t, T>,
+          details::has_invocable_r_size_const<std::size_t, T>>
 {
 };
 
 template <typename T>
-inline constexpr bool has_size_and_iterable_v = has_size_and_iterable<T>::value;
+inline constexpr bool has_size_v = has_size<T>::value;
 }  // namespace utils
 
 #endif /* utils_std_traits_h */
