@@ -166,10 +166,24 @@ inline constexpr bool is_equal_sizes_v = is_equal_sizes<Ts...>::value;
 template <typename T>
 struct tag_t
 {
+    using type = T;
 };
 
 template <typename T>
 constexpr tag_t<T> tag{};
+
+template <typename T>
+struct is_tag : std::false_type
+{
+};
+
+template <typename T>
+struct is_tag<tag_t<T>> : std::true_type
+{
+};
+
+template <typename T>
+inline constexpr bool is_tag_v = is_tag<T>::value;
 
 template <typename T>
 struct is_c_array : std::false_type
