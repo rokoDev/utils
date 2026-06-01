@@ -125,13 +125,13 @@ template <typename T>
 inline constexpr bool is_bool_v = is_bool<T>::value;
 
 template <typename T>
-struct is_integral_not_bool
+struct is_integral
     : std::conjunction<std::is_integral<T>, std::negation<is_bool<T>>>
 {
 };
 
 template <typename T>
-inline constexpr bool is_integral_not_bool_v = is_integral_not_bool<T>::value;
+inline constexpr bool is_integral_v = is_integral<T>::value;
 
 template <typename T>
 struct is_uint
@@ -773,8 +773,8 @@ template <typename T>
 inline constexpr bool is_implicit_convertible_to_int_v =
     is_implicit_convertible_to_int<T>::value;
 
-template <typename T, typename = std::enable_if_t<
-                          is_integral_not_bool_v<remove_cvref_t<T>>>>
+template <typename T,
+          typename = std::enable_if_t<is_integral_v<remove_cvref_t<T>>>>
 constexpr decltype(auto) abs_branchless(T&& a_value) noexcept
 {
     using In = remove_cvref_t<T>;
@@ -793,7 +793,7 @@ constexpr decltype(auto) abs_branchless(T&& a_value) noexcept
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sum_overflow(
+constexpr std::enable_if_t<is_integral_v<T>, bool> will_sum_overflow(
     T a, T b) noexcept
 {
     if (b > 0 && a > std::numeric_limits<T>::max() - b)
@@ -810,7 +810,7 @@ constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sum_overflow(
 }
 
 template <typename T>
-constexpr std::enable_if_t<is_integral_not_bool_v<T>, bool> will_sub_overflow(
+constexpr std::enable_if_t<is_integral_v<T>, bool> will_sub_overflow(
     T a, T b) noexcept
 {
     // Check for overflow
