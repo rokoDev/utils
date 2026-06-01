@@ -117,9 +117,16 @@ namespace utils
 inline void abort_if(const bool, char const* = nullptr, ...) noexcept;
 
 template <typename T>
+struct is_bool : std::is_same<T, bool>
+{
+};
+
+template <typename T>
+inline constexpr bool is_bool_v = is_bool<T>::value;
+
+template <typename T>
 struct is_integral_not_bool
-    : std::conjunction<std::is_integral<T>,
-                       std::negation<std::is_same<T, bool>>>
+    : std::conjunction<std::is_integral<T>, std::negation<is_bool<T>>>
 {
 };
 
@@ -129,7 +136,7 @@ inline constexpr bool is_integral_not_bool_v = is_integral_not_bool<T>::value;
 template <typename T>
 struct is_uint
     : std::conjunction<std::is_unsigned<T>, std::is_integral<T>,
-                       std::negation<std::is_same<T, bool>>>
+                       std::negation<is_bool<T>>>
 {
 };
 
@@ -139,7 +146,7 @@ inline constexpr bool is_uint_v = is_uint<T>::value;
 template <typename T>
 struct is_int
     : std::conjunction<std::is_signed<T>, std::is_integral<T>,
-                       std::negation<std::is_same<T, bool>>>
+                       std::negation<is_bool<T>>>
 {
 };
 
@@ -147,8 +154,15 @@ template <typename T>
 inline constexpr bool is_int_v = is_int<T>::value;
 
 template <typename T>
-struct is_uint_or_byte
-    : std::disjunction<is_uint<T>, std::is_same<T, std::byte>>
+struct is_byte : std::is_same<T, std::byte>
+{
+};
+
+template <typename T>
+inline constexpr bool is_byte_v = is_byte<T>::value;
+
+template <typename T>
+struct is_uint_or_byte : std::disjunction<is_uint<T>, is_byte<T>>
 {
 };
 
@@ -937,7 +951,7 @@ template <typename T>
 constexpr std::size_t nbits_occupied(T&& aValue) noexcept
 {
     using ValueT = remove_cvref_t<T>;
-    static_assert(std::is_unsigned_v<ValueT> && !std::is_same_v<ValueT, bool>,
+    static_assert(std::is_unsigned_v<ValueT> && !is_bool_v<ValueT>,
                   "ValueT must be unsigned and not bool.");
     ValueT vCopy = aValue;
     std::size_t nBitsToSave{};
@@ -1099,9 +1113,8 @@ inline constexpr decltype(auto) shift_right(T&& aValue,
                                             const std::size_t aNumBits) noexcept
 {
     using ValueT = remove_cvref_t<T>;
-    static_assert(
-        std::conjunction_v<std::is_integral<ValueT>,
-                           std::negation<std::is_same<ValueT, bool>>>);
+    static_assert(std::conjunction_v<std::is_integral<ValueT>,
+                                     std::negation<is_bool<ValueT>>>);
     assert(aNumBits < sizeof(ValueT) * CHAR_BIT);
     return static_cast<ValueT>(aValue >> aNumBits);
 }
@@ -1111,9 +1124,8 @@ inline constexpr decltype(auto) shift_left(T&& aValue,
                                            const std::size_t aNumBits) noexcept
 {
     using ValueT = remove_cvref_t<T>;
-    static_assert(
-        std::conjunction_v<std::is_integral<ValueT>,
-                           std::negation<std::is_same<ValueT, bool>>>);
+    static_assert(std::conjunction_v<std::is_integral<ValueT>,
+                                     std::negation<is_bool<ValueT>>>);
     assert(aNumBits < sizeof(ValueT) * CHAR_BIT);
     return static_cast<ValueT>(aValue << aNumBits);
 }
